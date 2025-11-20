@@ -1,0 +1,390 @@
+{
+  "manga": [
+    {
+      "id": "1",
+      "title": "จ้าวสงคราม",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=warrior1&size=400&backgroundColor=b6e3f4",
+      "author": {
+        "name": "Naruha",
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
+        "verified": true
+      },
+      "genres": ["แอคชั่น", "ผจญภัย"],
+      "views": 1300,
+      "chapters": 217,
+      "likes": 450,
+      "isNew": true,
+      "href": "/manga/1"
+    },
+    {
+      "id": "2",
+      "title": "นักรบแห่งแสง",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=light2&size=400&backgroundColor=ffd5dc",
+      "author": {
+        "name": "Sakura",
+        "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+        "verified": false
+      },
+      "genres": ["แฟนตาซี", "แอคชั่น"],
+      "views": 850,
+      "chapters": 156,
+      "likes": 320,
+      "isNew": false,
+      "href": "/manga/2"
+    },
+    {
+      "id": "3",
+      "title": "โลกแห่งเวทมนตร์",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=magic3&size=400&backgroundColor=c0aede",
+      "author": {
+        "name": "Miyuki",
+        "avatar": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop",
+        "verified": true
+      },
+      "genres": ["แฟนตาซี", "โรแมนติก"],
+      "views": 2100,
+      "chapters": 89,
+      "likes": 680,
+      "isNew": true,
+      "href": "/manga/3"
+    },
+    {
+      "id": "4",
+      "title": "การผจญภัยสุดขอบฟ้า",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=adventure4&size=400&backgroundColor=ffdfbf",
+      "author": {
+        "name": "Takeshi",
+        "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+        "verified": false
+      },
+      "genres": ["ผจญภัย", "แอคชั่น"],
+      "views": 650,
+      "chapters": 124,
+      "likes": 210,
+      "isNew": false,
+      "href": "/manga/4"
+    },
+    {
+      "id": "5",
+      "title": "เจ้าหญิงนักสู้",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=princess5&size=400&backgroundColor=d1d4f9",
+      "author": {
+        "name": "Rin",
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
+        "verified": true
+      },
+      "genres": ["แอคชั่น", "โรแมนติก"],
+      "views": 1890,
+      "chapters": 203,
+      "likes": 720,
+      "isNew": true,
+      "href": "/manga/5"
+    },
+    {
+      "id": "6",
+      "title": "นักล่ามอนสเตอร์",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=monster6&size=400&backgroundColor=b6e3f4",
+      "author": {
+        "name": "Kaito",
+        "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
+        "verified": false
+      },
+      "genres": ["แอคชั่น", "สยองขวัญ"],
+      "views": 1120,
+      "chapters": 178,
+      "likes": 380,
+      "isNew": false,
+      "href": "/manga/6"
+    },
+    {
+      "id": "7",
+      "title": "โรงเรียนเวทมนตร์",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=school7&size=400&backgroundColor=ffd5dc",
+      "author": {
+        "name": "Aoi",
+        "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+        "verified": true
+      },
+      "genres": ["แฟนตาซี", "ชีวิตประจำวัน"],
+      "views": 2750,
+      "chapters": 95,
+      "likes": 890,
+      "isNew": true,
+      "href": "/manga/7"
+    },
+    {
+      "id": "8",
+      "title": "นักสืบหนุ่ม",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=detective8&size=400&backgroundColor=c0aede",
+      "author": {
+        "name": "Shin",
+        "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+        "verified": false
+      },
+      "genres": ["ลึกลับ", "ระทึกขวัญ"],
+      "views": 1420,
+      "chapters": 167,
+      "likes": 510,
+      "isNew": false,
+      "href": "/manga/8"
+    },
+    {
+      "id": "9",
+      "title": "ราชาแห่งดาบ",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=sword9&size=400&backgroundColor=ffdfbf",
+      "author": {
+        "name": "Kenji",
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
+        "verified": true
+      },
+      "genres": ["แอคชั่น", "ประวัติศาสตร์"],
+      "views": 3200,
+      "chapters": 234,
+      "likes": 1100,
+      "isNew": true,
+      "href": "/manga/9"
+    },
+    {
+      "id": "10",
+      "title": "เทพเจ้าแห่งสงคราม",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=god10&size=400&backgroundColor=d1d4f9",
+      "author": {
+        "name": "Yuki",
+        "avatar": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop",
+        "verified": false
+      },
+      "genres": ["แฟนตาซี", "แอคชั่น"],
+      "views": 1680,
+      "chapters": 189,
+      "likes": 640,
+      "isNew": false,
+      "href": "/manga/10"
+    },
+    {
+      "id": "11",
+      "title": "นักรบไซเบอร์",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=cyber11&size=400&backgroundColor=b6e3f4",
+      "author": {
+        "name": "Neo",
+        "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
+        "verified": true
+      },
+      "genres": ["ไซไฟ", "แอคชั่น"],
+      "views": 2250,
+      "chapters": 145,
+      "likes": 780,
+      "isNew": true,
+      "href": "/manga/11"
+    },
+    {
+      "id": "12",
+      "title": "รักในโรงเรียน",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=romance12&size=400&backgroundColor=ffd5dc",
+      "author": {
+        "name": "Mika",
+        "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop",
+        "verified": false
+      },
+      "genres": ["โรแมนติก", "ชีวิตประจำวัน"],
+      "views": 1950,
+      "chapters": 112,
+      "likes": 690,
+      "isNew": false,
+      "href": "/manga/12"
+    }
+  ],
+  "novel": [
+    {
+      "id": "n1",
+      "title": "ราชาแห่งความมืด",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=darkking1&size=400&backgroundColor=c0aede",
+      "author": {
+        "name": "Yuki",
+        "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop",
+        "verified": true
+      },
+      "genres": ["แฟนตาซี", "โรแมนติก"],
+      "views": 3200,
+      "chapters": 145,
+      "likes": 920,
+      "isNew": true,
+      "href": "/novel/n1"
+    },
+    {
+      "id": "n2",
+      "title": "นักสู้ผู้ไร้พ่าย",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=undefeated2&size=400&backgroundColor=ffdfbf",
+      "author": {
+        "name": "Hiroshi",
+        "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
+        "verified": false
+      },
+      "genres": ["แอคชั่น", "ผจญภัย"],
+      "views": 1850,
+      "chapters": 98,
+      "likes": 540,
+      "isNew": false,
+      "href": "/novel/n2"
+    },
+    {
+      "id": "n3",
+      "title": "โลกคู่ขนาน",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=parallel3&size=400&backgroundColor=d1d4f9",
+      "author": {
+        "name": "Akari",
+        "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+        "verified": true
+      },
+      "genres": ["ไซไฟ", "แฟนตาซี"],
+      "views": 2450,
+      "chapters": 112,
+      "likes": 750,
+      "isNew": true,
+      "href": "/novel/n3"
+    },
+    {
+      "id": "n4",
+      "title": "ราชินีแห่งความมืด",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=darkqueen4&size=400&backgroundColor=b6e3f4",
+      "author": {
+        "name": "Luna",
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
+        "verified": true
+      },
+      "genres": ["แฟนตาซี", "โรแมนติก"],
+      "views": 3800,
+      "chapters": 198,
+      "likes": 1250,
+      "isNew": true,
+      "href": "/novel/n4"
+    },
+    {
+      "id": "n5",
+      "title": "นักรบแห่งอนาคต",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=future5&size=400&backgroundColor=ffd5dc",
+      "author": {
+        "name": "Ryo",
+        "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
+        "verified": false
+      },
+      "genres": ["ไซไฟ", "แอคชั่น"],
+      "views": 2100,
+      "chapters": 134,
+      "likes": 680,
+      "isNew": false,
+      "href": "/novel/n5"
+    },
+    {
+      "id": "n6",
+      "title": "วิญญาณนักรบ",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=spirit6&size=400&backgroundColor=c0aede",
+      "author": {
+        "name": "Sora",
+        "avatar": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop",
+        "verified": true
+      },
+      "genres": ["แฟนตาซี", "แอคชั่น"],
+      "views": 2950,
+      "chapters": 167,
+      "likes": 920,
+      "isNew": true,
+      "href": "/novel/n6"
+    },
+    {
+      "id": "n7",
+      "title": "รักแรกพบ",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=firstlove7&size=400&backgroundColor=ffdfbf",
+      "author": {
+        "name": "Hana",
+        "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+        "verified": false
+      },
+      "genres": ["โรแมนติก", "ชีวิตประจำวัน"],
+      "views": 1750,
+      "chapters": 89,
+      "likes": 560,
+      "isNew": false,
+      "href": "/novel/n7"
+    },
+    {
+      "id": "n8",
+      "title": "จักรวาลลึกลับ",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=mystery8&size=400&backgroundColor=d1d4f9",
+      "author": {
+        "name": "Kosuke",
+        "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+        "verified": true
+      },
+      "genres": ["ไซไฟ", "ลึกลับ"],
+      "views": 2650,
+      "chapters": 156,
+      "likes": 840,
+      "isNew": true,
+      "href": "/novel/n8"
+    },
+    {
+      "id": "n9",
+      "title": "นักล่าความฝัน",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=dream9&size=400&backgroundColor=b6e3f4",
+      "author": {
+        "name": "Mirai",
+        "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop",
+        "verified": false
+      },
+      "genres": ["ผจญภัย", "แฟนตาซี"],
+      "views": 1480,
+      "chapters": 123,
+      "likes": 470,
+      "isNew": false,
+      "href": "/novel/n9"
+    },
+    {
+      "id": "n10",
+      "title": "ราชาแห่งมังกร",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=dragon10&size=400&backgroundColor=ffd5dc",
+      "author": {
+        "name": "Tatsuya",
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
+        "verified": true
+      },
+      "genres": ["แฟนตาซี", "แอคชั่น"],
+      "views": 4200,
+      "chapters": 245,
+      "likes": 1380,
+      "isNew": true,
+      "href": "/novel/n10"
+    },
+    {
+      "id": "n11",
+      "title": "นักสืบสุดแกร่ง",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=strong11&size=400&backgroundColor=c0aede",
+      "author": {
+        "name": "Detective",
+        "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
+        "verified": false
+      },
+      "genres": ["ลึกลับ", "ระทึกขวัญ"],
+      "views": 1980,
+      "chapters": 178,
+      "likes": 610,
+      "isNew": false,
+      "href": "/novel/n11"
+    },
+    {
+      "id": "n12",
+      "title": "เทพธิดาแห่งแสง",
+      "coverImage": "https://api.dicebear.com/7.x/adventurer/png?seed=goddess12&size=400&backgroundColor=ffdfbf",
+      "author": {
+        "name": "Aurora",
+        "avatar": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop",
+        "verified": true
+      },
+      "genres": ["แฟนตาซี", "โรแมนติก"],
+      "views": 3350,
+      "chapters": 201,
+      "likes": 1050,
+      "isNew": true,
+      "href": "/novel/n12"
+    }
+  ]
+}

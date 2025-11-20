@@ -1,0 +1,157 @@
+"use client"
+
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { User, Settings, LogOut, BookOpen } from "lucide-react"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faCoins } from "@fortawesome/free-solid-svg-icons"
+
+interface UserDropdownMenuProps {
+  user?: {
+    nickname?: string
+    email?: string
+    avatar?: string
+    points?: number
+  }
+  onLogout?: () => void
+  profileUrl?: string
+  mediaUrl?: string
+  settingsUrl?: string
+  topupUrl?: string
+  onTopup?: () => void
+}
+
+const defaultUser = {
+  nickname: "Nickname",
+  email: "user@example.com",
+  avatar: "",
+  points: 1250,
+}
+
+export function UserDropdownMenu({
+  user = defaultUser,
+  onLogout,
+  profileUrl = "/profile",
+  mediaUrl = "/media",
+  settingsUrl = "/settings",
+  topupUrl = "/topup",
+  onTopup,
+}: UserDropdownMenuProps) {
+  const displayUser = { ...defaultUser, ...user }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-10 gap-2 px-2 cursor-pointer">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={displayUser.avatar} alt={displayUser.nickname} />
+            <AvatarFallback>
+              <User className="h-4 w-4" />
+            </AvatarFallback>
+          </Avatar>
+          <span className="hidden sm:inline-block">{displayUser.nickname}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuLabel>
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={displayUser.avatar} alt={displayUser.nickname} />
+              <AvatarFallback>
+                <User className="h-5 w-5" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col space-y-0.5">
+              <p className="text-sm font-medium leading-none">{displayUser.nickname}</p>
+              <p className="text-xs leading-none text-muted-foreground">
+                {displayUser.email}
+              </p>
+            </div>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <div className="px-2 py-2 mx-2 my-1.5 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 rounded-md border border-yellow-200 dark:border-yellow-800">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center w-7 h-7 rounded-full bg-yellow-100 dark:bg-yellow-900/50">
+                <FontAwesomeIcon icon={faCoins} className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-semibold text-yellow-700 dark:text-yellow-300">
+                  {displayUser.points?.toLocaleString()}
+                </span>
+              </div>
+            </div>
+            {onTopup ? (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={onTopup}
+                className="h-7 px-2 text-xs"
+              >
+                เติมเงิน
+              </Button>
+            ) : (
+              <Button
+                variant="default"
+                size="sm"
+                asChild
+                className="h-7 px-2 text-xs"
+              >
+                <Link href={topupUrl}>
+                  เติมเงิน
+                </Link>
+              </Button>
+            )}
+          </div>
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link
+            href={profileUrl}
+            className="flex items-center transition-colors hover:bg-accent hover:text-accent-foreground rounded-sm cursor-pointer"
+          >
+            <User className="mr-2 h-4 w-4" />
+            โปรไฟล์
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link
+            href={mediaUrl}
+            className="flex items-center transition-colors hover:bg-accent hover:text-accent-foreground rounded-sm cursor-pointer"
+          >
+            <BookOpen className="mr-2 h-4 w-4" />
+            ชั้นหนังสือ
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link
+            href={settingsUrl}
+            className="flex items-center transition-colors hover:bg-accent hover:text-accent-foreground rounded-sm cursor-pointer"
+          >
+            <Settings className="mr-2 h-4 w-4" />
+            ตั้งค่า
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className=" transition-colors hover:bg-destructive/10 hover:text-destructive rounded-sm cursor-pointer"
+          onClick={onLogout}
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Log out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+

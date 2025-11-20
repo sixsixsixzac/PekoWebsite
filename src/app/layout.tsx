@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/lib/providers/QueryProvider";
+import { ThemeProvider } from "@/lib/providers/ThemeProvider";
 import { AppLayout } from "@/components/layout/AppLayout";
 
 const geistSans = Geist({
@@ -15,8 +16,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Next.js App with Full Stack Setup",
-  description: "Next.js app with TypeScript, Prisma, NextAuth, Redis, and more",
+  title: {
+    template: `%s - Pekotoon`,
+    default: "Pekotoon",
+  },
+  description: "Pekotoon - Your trusted platform",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+  openGraph: {
+    type: "website",
+    locale: "th_TH",
+    siteName: "Pekotoon",
+  },
 };
 
 export default function RootLayout({
@@ -25,13 +35,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="th" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <QueryProvider>
-          <AppLayout>{children}</AppLayout>
-        </QueryProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <QueryProvider>
+            <AppLayout>{children}</AppLayout>
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
