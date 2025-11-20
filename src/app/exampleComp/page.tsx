@@ -33,13 +33,10 @@ import {
   CheckCircle2, 
   AlertCircle, 
   Info, 
-  XCircle,
   User,
   Settings,
   LogOut,
-  Mail,
-  Phone,
-  Home
+  Mail
 } from "lucide-react"
 
 export default function ExampleComponentsPage() {
