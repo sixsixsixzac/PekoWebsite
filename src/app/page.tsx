@@ -1,8 +1,6 @@
 import { generateMetadata } from "@/lib/utils/metadata";
 import type { Metadata } from "next";
 import { CartoonSectionWrapper } from "@/components/CartoonSectionWrapper";
-import type { CartoonCardProps } from "@/components/CartoonCard";
-import mockupData from "@/data/mockupCartoon.json";
 
 export const metadata: Metadata = generateMetadata({
   title: "หน้าหลัก",
@@ -11,9 +9,6 @@ export const metadata: Metadata = generateMetadata({
 });
 
 export default function Home() {
-  const mangaItems = mockupData.manga as CartoonCardProps[];
-  const novelItems = mockupData.novel as CartoonCardProps[];
-
   return (
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -21,7 +16,8 @@ export default function Home() {
         <CartoonSectionWrapper
           title="มังงะยอดนิยม"
           description="มังงะที่ได้รับความนิยมมากที่สุด"
-          items={mangaItems}
+          cartoonType="manga"
+          type="popular"
           itemsPerView={{
             mobile: 2,
             tablet: 3,
@@ -34,7 +30,8 @@ export default function Home() {
         <CartoonSectionWrapper
           title="นิยายยอดนิยม"
           description="นิยายที่ได้รับความนิยมมากที่สุด"
-          items={novelItems}
+          cartoonType="novel"
+          type="popular"
           itemsPerView={{
             mobile: 2,
             tablet: 3,

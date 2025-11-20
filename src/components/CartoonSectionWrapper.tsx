@@ -1,10 +1,10 @@
 import { CartoonSection } from "./CartoonSection";
-import type { CartoonCardProps } from "./CartoonCard";
 
 interface CartoonSectionWrapperProps {
   title: string;
   description?: string;
-  items: CartoonCardProps[];
+  cartoonType: "manga" | "novel";
+  type: string; // e.g., "popular", "latest", "trending" - backend handles ordering logic
   itemsPerView?: {
     mobile?: number;
     tablet?: number;
@@ -15,12 +15,15 @@ interface CartoonSectionWrapperProps {
 
 /**
  * Server-side rendered wrapper for CartoonSection
- * This component can be used in server components and passes data to the client component
+ * This component can be used in server components and passes configuration to the client component
+ * The client component will fetch its own data based on the provided parameters
+ * The backend will handle ordering logic based on the type parameter
  */
 export function CartoonSectionWrapper({
   title,
   description,
-  items,
+  cartoonType,
+  type,
   itemsPerView,
   className,
 }: CartoonSectionWrapperProps) {
@@ -28,7 +31,8 @@ export function CartoonSectionWrapper({
     <CartoonSection
       title={title}
       description={description}
-      items={items}
+      cartoonType={cartoonType}
+      type={type}
       itemsPerView={itemsPerView}
       className={className}
     />

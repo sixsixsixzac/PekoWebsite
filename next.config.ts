@@ -28,6 +28,12 @@ const nextConfig: NextConfig = {
     ],
     qualities: [75, 85],
   },
+  async rewrites() {
+    return [
+      { source: '/signin', destination: '/auth/signin' },
+      { source: '/signup', destination: '/auth/signup' },
+    ];
+  },
 };
 
 export default nextConfig;

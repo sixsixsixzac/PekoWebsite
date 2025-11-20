@@ -10,6 +10,7 @@ import { CartoonCard, type CartoonCardProps } from "./CartoonCard";
 import { CartoonCardSkeleton } from "./CartoonCardSkeleton";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import mockupData from "@/data/mockupCartoon.json";
 
 import "swiper/css";
 import "swiper/css/navigation";
@@ -18,7 +19,8 @@ import "swiper/css/pagination";
 interface CartoonSectionProps {
   title: string;
   description?: string;
-  items: CartoonCardProps[];
+  cartoonType: "manga" | "novel";
+  type: string; // e.g., "popular", "latest", "trending" - backend handles ordering logic
   itemsPerView?: {
     mobile?: number;
     tablet?: number;
@@ -30,7 +32,8 @@ interface CartoonSectionProps {
 export function CartoonSection({
   title,
   description,
-  items,
+  cartoonType,
+  type,
   itemsPerView = {
     mobile: 2,
     tablet: 3,
@@ -38,6 +41,47 @@ export function CartoonSection({
   },
   className,
 }: CartoonSectionProps) {
+  // Fetch data based on cartoonType and type
+  // Backend handles ordering logic based on type
+  const [items, setItems] = useState<CartoonCardProps[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // TODO: Replace with actual API call
+    // const response = await fetch(`/api/cartoons?cartoonType=${cartoonType}&type=${type}`)
+    // const data = await response.json()
+    
+    const fetchData = async () => {
+      setIsLoading(true);
+      
+      // For now, use mockup data and simulate backend ordering logic
+      const rawData = mockupData[cartoonType] as CartoonCardProps[];
+      
+      // Simulate backend ordering based on type
+      // In production, this logic will be handled by the backend
+      let sortedData = [...rawData];
+      switch (type) {
+        case "popular":
+          sortedData.sort((a, b) => (b.views || 0) - (a.views || 0));
+          break;
+        case "latest":
+          sortedData.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+          break;
+        case "trending":
+          sortedData.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+          break;
+        default:
+          // Default to views if type is not recognized
+          sortedData.sort((a, b) => (b.views || 0) - (a.views || 0));
+      }
+      
+      setItems(sortedData);
+      setIsLoading(false);
+    };
+
+    fetchData();
+  }, [cartoonType, type]);
+
   const swiperRef = useRef<SwiperType | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isBeginning, setIsBeginning] = useState(true);
@@ -71,8 +115,9 @@ export function CartoonSection({
     () =>
       combineLatest([activeIndex$, itemsPerView$]).pipe(
         map(([index, perView]) => {
+          const maxIndex = items.length > 0 ? items.length - 1 : 0;
           const start = Math.max(0, index - 1); // Load one before
-          const end = Math.min(items.length - 1, index + perView + 1); // Load one after
+          const end = Math.min(maxIndex, index + perView + 1); // Load one after
           return { start, end };
         })
       ),
@@ -109,7 +154,7 @@ export function CartoonSection({
 
   // Pre-load initial items immediately after mount
   useEffect(() => {
-    if (!isMounted) return;
+    if (!isMounted || items.length === 0) return;
     
     // Small delay to ensure skeletons show first, then load items
     const timer = setTimeout(() => {
@@ -185,6 +230,15 @@ export function CartoonSection({
     setIsEnd(swiper.isEnd);
   }, []);
 
+  // Update Swiper when items change
+  useEffect(() => {
+    if (swiperRef.current && !isLoading && items.length > 0) {
+      swiperRef.current.update();
+      swiperRef.current.updateSlides();
+      swiperRef.current.updateSlidesClasses();
+    }
+  }, [items, isLoading]);
+
   const slidePrev = useCallback(() => {
     swiperRef.current?.slidePrev();
   }, []);
@@ -197,9 +251,10 @@ export function CartoonSection({
   // For mobile (2.5 per view), we use slidesPerGroup (2) for calculation
   const mobilePerGroup = 2;
   const isMobile = isMounted && typeof window !== "undefined" && window.innerWidth < 768;
+  const itemsCount = isLoading || items.length === 0 ? (itemsPerView.desktop ?? 5) : items.length;
   const totalSlides = isMobile
-    ? Math.ceil(items.length / mobilePerGroup)
-    : Math.ceil(items.length / currentItemsPerView);
+    ? Math.ceil(itemsCount / mobilePerGroup)
+    : Math.ceil(itemsCount / currentItemsPerView);
 
   return (
     <section className={cn("relative", className)}>
@@ -213,6 +268,7 @@ export function CartoonSection({
           @media (min-width: 768px) {
             .swiper-pagination {
               display: flex !important;
+              cursor: pointer !important;
             }
             
             .swiper-pagination-bullet {
@@ -221,6 +277,7 @@ export function CartoonSection({
               width: 8px !important;
               height: 8px !important;
               transition: all 0.3s ease !important;
+              cursor: pointer !important;
             }
             
             .swiper-pagination-bullet-active {
@@ -228,15 +285,18 @@ export function CartoonSection({
               opacity: 1 !important;
               width: 24px !important;
               border-radius: 4px !important;
+              cursor: pointer !important;
             }
             
             .swiper-pagination-bullet:hover {
               opacity: 0.6 !important;
+              cursor: pointer !important;
             }
             
             .swiper-pagination-bullet-active:hover {
               background: var(--primary) !important;
               opacity: 1 !important;
+              cursor: pointer !important;
             }
           }
         `
@@ -257,7 +317,7 @@ export function CartoonSection({
           <Button
             variant="outline"
             size="icon"
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 z-10 rounded-full h-10 w-10"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 z-10 rounded-full h-10 w-10 cursor-pointer"
             onClick={slidePrev}
             disabled={isBeginning}
             aria-label="Previous slides"
@@ -267,7 +327,7 @@ export function CartoonSection({
           <Button
             variant="outline"
             size="icon"
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 z-10 rounded-full h-10 w-10"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 z-10 rounded-full h-10 w-10 cursor-pointer"
             onClick={slideNext}
             disabled={isEnd}
             aria-label="Next slides"
@@ -314,27 +374,37 @@ export function CartoonSection({
             clickable: true,
             dynamicBullets: true,
             renderBullet: (index: number, className: string) => {
-              return `<span class="${className}"></span>`;
+              return `<span class="${className}" style="cursor: pointer;"></span>`;
             },
           }}
           className="!pb-10 md:!pb-10 !pb-4"
+          key={`swiper-${items.length}-${isLoading}`}
         >
-          {items.map((item, index) => {
-            const isLoaded = loadedItems.has(index);
-            
-            return (
-              <SwiperSlide key={item.id} virtualIndex={index}>
-                {isLoaded ? (
-                  <CartoonCard
-                    {...item}
-                    priority={index < (itemsPerView.desktop ?? 5)}
-                  />
-                ) : (
-                  <CartoonCardSkeleton />
-                )}
+          {isLoading || items.length === 0 ? (
+            // Show skeletons while loading
+            Array.from({ length: itemsPerView.desktop ?? 5 }).map((_, index) => (
+              <SwiperSlide key={`skeleton-${index}`} virtualIndex={index}>
+                <CartoonCardSkeleton />
               </SwiperSlide>
-            );
-          })}
+            ))
+          ) : (
+            items.map((item, index) => {
+              const isLoaded = loadedItems.has(index);
+              
+              return (
+                <SwiperSlide key={item.id} virtualIndex={index}>
+                  {isLoaded ? (
+                    <CartoonCard
+                      {...item}
+                      priority={index < (itemsPerView.desktop ?? 5)}
+                    />
+                  ) : (
+                    <CartoonCardSkeleton />
+                  )}
+                </SwiperSlide>
+              );
+            })
+          )}
         </Swiper>
 
         {/* Mobile Scroll Indicators */}
