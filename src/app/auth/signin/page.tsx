@@ -4,7 +4,7 @@ import { SignInForm } from '@/components/auth/SignInForm'
 
 export const metadata: Metadata = generateMetadata({
   title: 'เข้าสู่ระบบ',
-  description: 'เข้าสู่ระบบเพื่อใช้งาน Pekotoon - แพลตฟอร์มที่คุณไว้วางใจ',
+  description: 'เข้าสู่ระบบเพื่อใช้งาน',
   keywords: ['Pekotoon', 'เข้าสู่ระบบ', 'sign in', 'login'],
 })
 

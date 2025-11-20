@@ -4,7 +4,7 @@ import { SignUpForm } from '@/components/auth/SignUpForm'
 
 export const metadata: Metadata = generateMetadata({
   title: 'สมัครสมาชิก',
-  description: 'สมัครสมาชิกเพื่อเริ่มใช้งาน Pekotoon - แพลตฟอร์มที่คุณไว้วางใจ',
+  description: 'สมัครสมาชิกเพื่อเริ่มใช้งาน ',
   keywords: ['Pekotoon', 'สมัครสมาชิก', 'sign up', 'register'],
 })
 

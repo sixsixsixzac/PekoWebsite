@@ -28,14 +28,18 @@ export function generateMetadata({
   image?: string
   noIndex?: boolean
 }): Metadata {
-  const fullTitle = `${title} - ${BRAND_NAME}`
+  // Use BRAND_NAME if available, otherwise fallback to "Pekotoon"
+  const brandName = BRAND_NAME || "DEMO"
+  const fullTitle = `${title} - ${brandName}`
   const metaDescription = description || DEFAULT_DESCRIPTION
 
   return {
-    title: fullTitle,
+    // Return just the title - the root layout template will add the brand name
+    title: title,
     description: metaDescription,
     keywords: keywords?.join(", "),
     openGraph: {
+      // Use full title for Open Graph (no template applied)
       title: fullTitle,
       description: metaDescription,
       type: "website",
@@ -43,6 +47,7 @@ export function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
+      // Use full title for Twitter (no template applied)
       title: fullTitle,
       description: metaDescription,
       ...(image && { images: [image] }),
