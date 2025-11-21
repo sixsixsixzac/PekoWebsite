@@ -58,3 +58,4 @@ next-env.d.ts
 
 # post images
 /public/images/post_img
+.example.env
