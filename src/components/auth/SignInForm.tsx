@@ -2,6 +2,7 @@
 
 import { signIn } from 'next-auth/react'
 import { useState, useRef, FormEvent, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Lock, Eye, EyeOff, User } from 'lucide-react'
@@ -26,6 +27,9 @@ const ReCAPTCHA = dynamic(
 ) as any
 
 export function SignInForm() {
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get('callbackUrl') || '/'
+  
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [identifier, setIdentifier] = useState('')
@@ -73,13 +77,13 @@ export function SignInForm() {
         identifier,
         password,
         redirect: false,
-        callbackUrl: '/',
+        callbackUrl,
       })
 
       if (result?.error) {
         alert('อีเมล/ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง')
       } else if (result?.ok) {
-        window.location.href = '/'
+        window.location.href = callbackUrl
       }
     } catch (error) {
       console.error('Sign in error:', error)
@@ -103,7 +107,7 @@ export function SignInForm() {
       }
 
       await signIn('google', {
-        callbackUrl: '/',
+        callbackUrl,
       })
     } catch (error) {
       console.error('Sign in error:', error)

@@ -1,5 +1,6 @@
 import { generateMetadata } from '@/lib/utils/metadata'
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { SignInForm } from '@/components/auth/SignInForm'
 
 export const metadata: Metadata = generateMetadata({
@@ -9,5 +10,9 @@ export const metadata: Metadata = generateMetadata({
 })
 
 export default function SignInPage() {
-  return <SignInForm />
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">กำลังโหลด...</div>}>
+      <SignInForm />
+    </Suspense>
+  )
 }
