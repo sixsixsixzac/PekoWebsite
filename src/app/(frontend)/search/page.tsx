@@ -9,6 +9,8 @@ import {
   ORIGIN_TYPE_KOREAN,
   ORIGIN_TYPE_CHINESE,
 } from "@/lib/constants/cartoon.constants";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { PreventBodyScroll } from "@/app/(frontend)/landing/components/PreventBodyScroll";
 
 interface SearchPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }> | { [key: string]: string | string[] | undefined };
@@ -71,13 +73,20 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <SearchPageClient
-        mainCategories={categories}
-        subCategories={categories}
-        initialFilters={initialFilters}
-      />
-    </div>
+    <>
+      <PreventBodyScroll />
+      <div className="h-[calc(100vh-4rem)] overflow-hidden">
+        <ScrollArea className="h-full">
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            <SearchPageClient
+              mainCategories={categories}
+              subCategories={categories}
+              initialFilters={initialFilters}
+            />
+          </div>
+        </ScrollArea>
+      </div>
+    </>
   );
 }
 

@@ -1,6 +1,8 @@
 import { generateMetadata } from "@/lib/utils/metadata";
 import type { Metadata } from "next";
 import { CartoonSection } from "@/app/(frontend)/landing/components/CartoonSection";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { PreventBodyScroll } from "@/app/(frontend)/landing/components/PreventBodyScroll";
 
 export const metadata: Metadata = generateMetadata({
   title: "หน้าหลัก",
@@ -10,8 +12,11 @@ export const metadata: Metadata = generateMetadata({
 
 export default async function LandingPage() {
   return (
-    <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <>
+      <PreventBodyScroll />
+      <div className="h-[calc(100vh-4rem)] overflow-hidden">
+        <ScrollArea className="h-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Popular Manga Section */}
         <CartoonSection
           title="มังงะยอดนิยม"
@@ -77,8 +82,10 @@ export default async function LandingPage() {
           limit={6}
           moreHref="/search?cartoonType=novel&orderBy=latest"
         />
-      </div>
+        </div>
+      </ScrollArea>
     </div>
+    </>
   );
 }
 
