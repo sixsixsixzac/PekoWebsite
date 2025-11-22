@@ -37,3 +37,10 @@ export interface EpisodeHeaderProps {
   isLoading?: boolean;
 }
 
+export interface EpisodeFooterProps {
+  totalPages?: number;
+  currentPage?: number;
+  onPageJump?: (page: number) => void;
+  shareUrl?: string;
+}
+

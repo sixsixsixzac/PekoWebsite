@@ -9,6 +9,7 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/
 import { ImageIcon } from "lucide-react";
 import { EpisodeUnlock } from "./EpisodeUnlock";
 import { EpisodeHeader } from "./EpisodeHeader";
+import { EpisodeFooter } from "./EpisodeFooter";
 import { toast } from "sonner";
 import {
   Breadcrumb,
@@ -91,15 +92,55 @@ export function MangaRead({ cartoonUuid, episode, buyImmediately = false, loadFu
   const [userPoints, setUserPoints] = useState<number | null>(initialUserPoints);
   const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
   const [cartoonTitle, setCartoonTitle] = useState<string | null>(null);
+  const [currentPageIndex, setCurrentPageIndex] = useState(1);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const currentPageRef = useRef(1);
   const fetchingRef = useRef(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const imageRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Handle image load errors
   const handleImageError = useCallback((index: number) => {
     setFailedImages((prev) => new Set(prev).add(index));
   }, []);
+
+  // Handle page jump
+  const handlePageJump = useCallback((page: number) => {
+    const targetIndex = page - 1;
+    if (targetIndex >= 0 && targetIndex < images.length) {
+      const targetElement = imageRefs.current[targetIndex];
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
+        setCurrentPageIndex(page);
+      }
+    }
+  }, [images.length]);
+
+  // Track current page based on scroll position
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + window.innerHeight / 2;
+      
+      for (let i = 0; i < imageRefs.current.length; i++) {
+        const element = imageRefs.current[i];
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          const elementTop = rect.top + window.scrollY;
+          const elementBottom = elementTop + rect.height;
+          
+          if (scrollPosition >= elementTop && scrollPosition <= elementBottom) {
+            setCurrentPageIndex(i + 1);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll(); // Initial check
+    
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [images.length]);
 
   // Memoize navigation handler to prevent unnecessary re-renders
   const handleNavigation = useCallback(async (epNo: number | null) => {
@@ -459,12 +500,18 @@ export function MangaRead({ cartoonUuid, episode, buyImmediately = false, loadFu
 
       {/* Show actual images */}
       {images.map((imageUrl, index) => (
+        <div
+          key={`${imageUrl}-${index}`}
+          ref={(el) => {
+            imageRefs.current[index] = el;
+          }}
+        >
         <MangaImage 
-          key={`${imageUrl}-${index}`} 
           imageUrl={imageUrl} 
           index={index}
           onError={handleImageError}
         />
+        </div>
       ))}
       
       {/* Show skeleton loaders when loading more images */}
@@ -474,6 +521,14 @@ export function MangaRead({ cartoonUuid, episode, buyImmediately = false, loadFu
       {hasMore && (
         <div ref={sentinelRef} className="h-1 w-full" aria-hidden="true" />
       )}
+
+      {/* Episode Footer */}
+      <EpisodeFooter
+        totalPages={images.length}
+        currentPage={currentPageIndex}
+        onPageJump={handlePageJump}
+        shareUrl={undefined}
+      />
     </div>
   );
 }
