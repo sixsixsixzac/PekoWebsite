@@ -28,8 +28,6 @@ const nextConfig: NextConfig = {
     return [
       { source: '/signin', destination: '/auth/signin' },
       { source: '/signup', destination: '/auth/signup' },
-      { source: '/', destination: '/landing' },
-      { source: '/home', destination: '/landing' },
     ];
   },
   // Optimize JavaScript bundle size and code splitting

@@ -1,6 +1,5 @@
 import { generateMetadata } from "@/lib/utils/metadata";
 import type { Metadata } from "next";
-import LandingPage from "@/app/(frontend)/landing/page";
 
 export const metadata: Metadata = generateMetadata({
   title: "หน้าหลัก",
@@ -9,6 +8,10 @@ export const metadata: Metadata = generateMetadata({
 });
 
 export default async function RootPage() {
-  return <LandingPage />;
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <h1 className="text-2xl font-bold">Welcome to Pekotoon</h1>
+    </div>
+  );
 }
 

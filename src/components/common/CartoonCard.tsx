@@ -66,7 +66,7 @@ function CartoonCardComponent({
       itemType="https://schema.org/ComicSeries"
     >
       {/* Cover Image Container */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-muted">
+      <div className="relative w-full h-[250px] md:aspect-[3/4] md:h-auto overflow-hidden bg-muted">
         <OptimizedImage
           src={coverImage}
           alt={`${title} cover image`}
