@@ -8,6 +8,8 @@ import type { CartoonCardProps } from "../../../../components/common/CartoonCard
 import type { SearchParams, SearchResponse } from "@/lib/types/search";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
+import { BookOpen } from "lucide-react";
 
 export interface CartoonSectionClientProps {
   title: string;
@@ -125,7 +127,7 @@ export function CartoonSectionClient({
           </div>
         )}
       </div>
-      {initialData.length > 0 && (
+      {initialData.length > 0 ? (
         <CartoonScroller
           initialData={initialData}
           fetchMore={controlledFetchMore}
@@ -134,6 +136,18 @@ export function CartoonSectionClient({
           initialHasMore={initialHasMore}
           isInViewport={isInViewport}
         />
+      ) : (
+        <Empty className="min-h-[200px]">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <BookOpen className="size-12 text-muted-foreground" />
+            </EmptyMedia>
+            <EmptyTitle>ไม่พบข้อมูล</EmptyTitle>
+            <EmptyDescription>
+              ไม่พบ{title.toLowerCase()}ในขณะนี้
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       )}
     </section>
   );
