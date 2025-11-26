@@ -111,7 +111,7 @@ export function CartoonDetailPage({
       />
 
       <article className="min-h-screen bg-background" itemScope itemType={type === "manga" ? "https://schema.org/ComicSeries" : "https://schema.org/Book"}>
-        <div className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
           {/* Breadcrumb */}
           <nav aria-label="Breadcrumb">
             <Breadcrumb>
