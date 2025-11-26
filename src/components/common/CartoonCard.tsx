@@ -208,31 +208,6 @@ function CartoonCardComponent({
           </div>
         </div>
       </div>
-
-      {/* Schema.org structured data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "ComicSeries",
-            "@id": `https://pekotoon.com/cartoon/${uuid}`,
-            name: title,
-            image: coverImage,
-            author: {
-              "@type": "Person",
-              name: author.name,
-              image: author.avatar,
-            },
-            genre: genres,
-            aggregateRating: {
-              "@type": "AggregateRating",
-              ratingValue: views > 0 ? "4.5" : "0",
-              ratingCount: views,
-            },
-          }),
-        }}
-      />
     </article>
   );
 

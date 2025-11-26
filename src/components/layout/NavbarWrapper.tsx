@@ -37,8 +37,8 @@ export function NavbarWrapper({ sessionUser, userData, menuItems }: NavbarWrappe
             {/* Mobile Menu */}
             <MobileMenu menuItems={menuItems} />
 
-            {/* Logo */}
-            <Link href="/home" className="flex items-center gap-2 font-semibold">
+            {/* Logo - always go to landing page ("/") */}
+            <Link href="/" className="flex items-center gap-2 font-semibold">
               <Image
                 src="/logo/logo.png"
                 alt="Logo"
