@@ -19,6 +19,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import type { NovelReadProps } from "../../../components/types";
+import { fetchService } from "@/lib/services/fetch-service";
 
 export function NovelRead({ cartoonUuid, episode, buyImmediately = false, userPoints: initialUserPoints = null }: NovelReadProps) {
   const router = useRouter();
@@ -43,62 +44,56 @@ export function NovelRead({ cartoonUuid, episode, buyImmediately = false, userPo
     if (buyImmediately && epNo === navigation?.nextEpNo) {
       try {
         // Fetch episode info for the next episode
-        const episodeInfoResponse = await fetch(
-          `/api/novel/episode/content?cartoonUuid=${cartoonUuid}&episode=${epNo}`
-        );
-
-        if (episodeInfoResponse.status === 403) {
-          const errorData = await episodeInfoResponse.json().catch(() => ({}));
-          
-          if (errorData.episodeInfo) {
-            const nextEpisodeInfo = errorData.episodeInfo;
+        try {
+          await fetchService.get(`/api/novel/episode/content?cartoonUuid=${cartoonUuid}&episode=${epNo}`);
+        } catch (error: unknown) {
+          // Check if it's a 403 error with episode info
+          if (error && typeof error === 'object' && 'status' in error && error.status === 403 && 'data' in error) {
+            const errorData = error.data as { episodeInfo?: { epId: number; epNo: number; epPrice: number } };
             
-            // Check if user has enough points
-            if (userPoints !== null && userPoints >= nextEpisodeInfo.epPrice) {
-              // Auto-purchase the episode
-              const purchaseResponse = await fetch("/api/novel/episode/purchase", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  cartoonUuid,
-                  episode: nextEpisodeInfo.epNo,
-                  epId: nextEpisodeInfo.epId,
-                }),
-              });
-
-              if (purchaseResponse.ok) {
-                // Refresh user points from server
+            if (errorData?.episodeInfo) {
+              const nextEpisodeInfo = errorData.episodeInfo;
+              
+              // Check if user has enough points
+              if (userPoints !== null && userPoints >= nextEpisodeInfo.epPrice) {
+                // Auto-purchase the episode
                 try {
-                  const pointsResponse = await fetch("/api/user/points");
-                  if (pointsResponse.ok) {
-                    const pointsData = await pointsResponse.json();
+                  await fetchService.post("/api/novel/episode/purchase", {
+                    cartoonUuid,
+                    episode: nextEpisodeInfo.epNo,
+                    epId: nextEpisodeInfo.epId,
+                  });
+
+                  // Refresh user points from server
+                  try {
+                    const pointsData = await fetchService.get<{ points: number }>("/api/user/points");
                     setUserPoints(pointsData.points);
+                  } catch (err) {
+                    console.error("Failed to refresh points:", err);
+                    // Fallback to calculated points
+                    setUserPoints(prev => prev !== null ? prev - nextEpisodeInfo.epPrice : null);
                   }
-                } catch (err) {
-                  console.error("Failed to refresh points:", err);
-                  // Fallback to calculated points
-                  setUserPoints(prev => prev !== null ? prev - nextEpisodeInfo.epPrice : null);
+                  
+                  // Show success notification
+                  toast.success(`ซื้อตอนที่ ${nextEpisodeInfo.epNo} สำเร็จ`, {
+                    description: `ใช้ ${nextEpisodeInfo.epPrice.toLocaleString()} พอยต์`,
+                  });
+                  
+                  // Navigate to the episode
+                  router.push(`/novel/${cartoonUuid}/${epNo}`);
+                  return;
+                } catch (purchaseError: unknown) {
+                  const errorMsg = purchaseError && typeof purchaseError === 'object' && 'data' in purchaseError
+                    ? (purchaseError.data as { error?: string })?.error
+                    : "ไม่สามารถซื้อตอนได้";
+                  toast.error(errorMsg || "ไม่สามารถซื้อตอนได้");
                 }
-                
-                // Show success notification
-                toast.success(`ซื้อตอนที่ ${nextEpisodeInfo.epNo} สำเร็จ`, {
-                  description: `ใช้ ${nextEpisodeInfo.epPrice.toLocaleString()} พอยต์`,
-                });
-                
-                // Navigate to the episode
-                router.push(`/novel/${cartoonUuid}/${epNo}`);
-                return;
               } else {
-                const errorData = await purchaseResponse.json().catch(() => ({}));
-                toast.error(errorData.error || "ไม่สามารถซื้อตอนได้");
+                // Not enough points, show unlock component
+                toast.warning("พอยต์ไม่เพียงพอ", {
+                  description: `ต้องการ ${nextEpisodeInfo.epPrice.toLocaleString()} พอยต์ แต่คุณมี ${userPoints?.toLocaleString() || 0} พอยต์`,
+                });
               }
-            } else {
-              // Not enough points, show unlock component
-              toast.warning("พอยต์ไม่เพียงพอ", {
-                description: `ต้องการ ${nextEpisodeInfo.epPrice.toLocaleString()} พอยต์ แต่คุณมี ${userPoints?.toLocaleString() || 0} พอยต์`,
-              });
             }
           }
         }
@@ -144,28 +139,11 @@ export function NovelRead({ cartoonUuid, episode, buyImmediately = false, userPo
     setError(null);
 
     try {
-      const response = await fetch(
-        `/api/novel/episode/content?cartoonUuid=${cartoonUuid}&episode=${episode}`
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        if (response.status === 403) {
-          // Show unlock component with episode info
-          if (errorData.episodeInfo && errorData.navigation) {
-            setUnlockData({
-              episodeInfo: errorData.episodeInfo,
-              navigation: errorData.navigation,
-            });
-            setLoading(false);
-            return;
-          }
-          throw new Error(errorData.error || "You don't own this episode");
-        }
-        throw new Error(errorData.error || "Failed to fetch content");
-      }
-
-      const data = await response.json();
+      const data = await fetchService.get<{
+        content: string;
+        episodeInfo?: { epName: string; epNo: number };
+        navigation?: { prevEpNo: number | null; nextEpNo: number | null };
+      }>(`/api/novel/episode/content?cartoonUuid=${cartoonUuid}&episode=${episode}`);
       
       setContent(data.content);
       if (data.episodeInfo) {
@@ -174,8 +152,28 @@ export function NovelRead({ cartoonUuid, episode, buyImmediately = false, userPo
       if (data.navigation) {
         setNavigation(data.navigation);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+    } catch (err: unknown) {
+      // Check if it's a 403 error with episode info
+      if (err && typeof err === 'object' && 'status' in err && err.status === 403 && 'data' in err) {
+        const errorData = err.data as {
+          episodeInfo?: { epId: number; epNo: number; epName: string; epPrice: number };
+          navigation?: { prevEpNo: number | null; nextEpNo: number | null };
+        };
+        
+        if (errorData.episodeInfo && errorData.navigation) {
+          setUnlockData({
+            episodeInfo: errorData.episodeInfo,
+            navigation: errorData.navigation,
+          });
+          setLoading(false);
+          return;
+        }
+      }
+      
+      const errorMessage = err && typeof err === 'object' && 'message' in err && typeof err.message === 'string'
+        ? err.message
+        : "An error occurred";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -185,11 +183,8 @@ export function NovelRead({ cartoonUuid, episode, buyImmediately = false, userPo
   useEffect(() => {
     const fetchCartoonTitle = async () => {
       try {
-        const response = await fetch(`/api/cartoon/${cartoonUuid}?type=novel`);
-        if (response.ok) {
-          const data = await response.json();
-          setCartoonTitle(data.title || null);
-        }
+        const data = await fetchService.get<{ title: string }>(`/api/cartoon/${cartoonUuid}?type=novel`);
+        setCartoonTitle(data.title || null);
       } catch (err) {
         console.error("Failed to fetch cartoon title:", err);
       }

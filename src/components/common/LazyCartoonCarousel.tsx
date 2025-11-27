@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CartoonCarousel } from "@/components/common/CartoonCarousel";
 import type { SearchFilters, SearchResponse } from "@/lib/types/search";
 import type { CartoonCardProps } from "@/components/common/CartoonCard";
+import { fetchService } from "@/lib/services/fetch-service";
 
 interface LazyCartoonCarouselProps {
   title?: string;
@@ -128,12 +129,11 @@ export function LazyCartoonCarousel({
 
         void (async () => {
           try {
-            const response = await fetch(`/api/cartoon/search?${params.toString()}`);
-            if (!response.ok) {
-              return;
-            }
-            const data = (await response.json()) as SearchResponse;
+            const data = await fetchService.get<SearchResponse>(`/api/cartoon/search?${params.toString()}`);
             setItems(data.data);
+          } catch (error) {
+            // Silently fail - don't show error for lazy loading
+            console.error("Failed to load carousel items:", error);
           } finally {
             setIsLoading(false);
           }

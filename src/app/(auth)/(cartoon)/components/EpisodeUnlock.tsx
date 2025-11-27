@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCoins } from "@fortawesome/free-solid-svg-icons";
 import { EpisodeHeader } from "./EpisodeHeader";
 import type { EpisodeUnlockProps } from "./types";
+import { fetchService } from "@/lib/services/fetch-service";
 
 export function EpisodeUnlock({ cartoonUuid, episode, episodeInfo, navigation, userPoints: initialUserPoints, cartoonType = "manga" }: EpisodeUnlockProps) {
   const router = useRouter();
@@ -32,11 +33,8 @@ export function EpisodeUnlock({ cartoonUuid, episode, episodeInfo, navigation, u
     if (initialUserPoints === undefined) {
       const fetchUserPoints = async () => {
         try {
-          const response = await fetch("/api/user/points");
-          if (response.ok) {
-            const data = await response.json();
-            setUserPoints(data.points);
-          }
+          const data = await fetchService.get<{ points: number }>("/api/user/points");
+          setUserPoints(data.points);
         } catch (err) {
           console.error("Failed to fetch user points:", err);
         } finally {
@@ -65,27 +63,21 @@ export function EpisodeUnlock({ cartoonUuid, episode, episodeInfo, navigation, u
     setError(null);
 
     try {
-      const response = await fetch(purchaseApiPath, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          cartoonUuid,
-          episode: episodeInfo.epNo,
-          epId: episodeInfo.epId,
-        }),
+      await fetchService.post(purchaseApiPath, {
+        cartoonUuid,
+        episode: episodeInfo.epNo,
+        epId: episodeInfo.epId,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to purchase episode");
-      }
 
       // Refresh the page to show the unlocked episode
       window.location.reload();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการซื้อ");
+    } catch (err: unknown) {
+      const errorMessage = err && typeof err === 'object' && 'data' in err
+        ? (err.data as { error?: string })?.error || "เกิดข้อผิดพลาดในการซื้อ"
+        : err && typeof err === 'object' && 'message' in err && typeof err.message === 'string'
+        ? err.message
+        : "เกิดข้อผิดพลาดในการซื้อ";
+      setError(errorMessage);
       setPurchasing(false);
     }
   }, [hasEnoughPoints, cartoonUuid, episodeInfo, purchaseApiPath]);

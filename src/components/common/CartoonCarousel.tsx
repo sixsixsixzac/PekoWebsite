@@ -14,6 +14,7 @@ import {
 import { CartoonCard, type CartoonCardProps } from "@/components/common/CartoonCard";
 import { CartoonCardSkeleton } from "@/components/common/CartoonCardSkeleton";
 import type { SearchResponse } from "@/lib/types/search";
+import { fetchService } from "@/lib/services/fetch-service";
 
 type CartoonCarouselProps = {
   title?: string;
@@ -78,17 +79,12 @@ export function CartoonCarousel({
         limit: String(requestLimit),
       });
 
-      const response = await fetch(`/api/cartoon/search?${params.toString()}`);
+      try {
+        const data = await fetchService.get<SearchResponse>(`/api/cartoon/search?${params.toString()}`);
 
-      if (!response.ok) {
-        return;
-      }
-
-      const data = (await response.json()) as SearchResponse;
-
-      setAllItems((prev) => {
+        setAllItems((prev) => {
         const existing = new Set(prev.map((item) => item.uuid));
-        const newItems = data.data.filter((item) => !existing.has(item.uuid));
+        const newItems = data.data.filter((item: CartoonCardProps) => !existing.has(item.uuid));
         let combined = newItems.length ? [...prev, ...newItems] : prev;
 
         if (typeof totalItems === "number" && combined.length >= totalItems) {
@@ -101,7 +97,11 @@ export function CartoonCarousel({
         return combined;
       });
 
-      setPage(nextPage);
+        setPage(nextPage);
+      } catch (error) {
+        // Silently fail - don't show error for pagination
+        console.error("Failed to load more items:", error);
+      }
     } finally {
       setIsLoadingMore(false);
     }

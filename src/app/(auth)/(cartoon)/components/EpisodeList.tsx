@@ -20,6 +20,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Check, Clock, ChevronDown, ShoppingCart } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCoins } from "@fortawesome/free-solid-svg-icons";
+import { fetchService } from "@/lib/services/fetch-service";
 
 interface Episode {
   uuid: string;
@@ -61,11 +62,8 @@ export function EpisodeList({
     if (isLoggedIn && propUserPoints === undefined && session?.user?.id) {
       const fetchUserPoints = async () => {
         try {
-          const response = await fetch(`/api/user/points`);
-          if (response.ok) {
-            const data = await response.json();
-            setUserPoints(data.points ?? 0);
-          }
+          const data = await fetchService.get<{ points: number }>("/api/user/points");
+          setUserPoints(data.points ?? 0);
         } catch (error) {
           console.error("Failed to fetch user points:", error);
           setUserPoints(0);

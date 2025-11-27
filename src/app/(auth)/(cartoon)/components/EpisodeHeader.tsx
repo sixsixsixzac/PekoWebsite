@@ -13,7 +13,7 @@ export function EpisodeHeader({
   return (
     <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
       <div className="flex items-center justify-between px-4 md:px-0 py-2">
-        <div className="flex-1">
+        <div className="flex-1 px-3">
           {episodeInfo ? (
             <div>
               <h2 className="text-base font-semibold">ตอนที่ {episodeInfo.epNo}</h2>
