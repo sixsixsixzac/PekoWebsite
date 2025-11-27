@@ -1,10 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import { memo } from "react";
+import { useRouter } from "next/navigation";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Eye, BookOpen, CheckCircle2, Clock, Heart, CheckCircle, PlayCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { OptimizedImage } from "@/components/common/OptimizedImage";
+import { encodeUsername } from "@/lib/utils/username-encode";
 
 export interface CartoonCardProps {
   uuid: string;
@@ -12,6 +16,7 @@ export interface CartoonCardProps {
   coverImage: string;
   author: {
     name: string;
+    username: string;
     avatar?: string;
     verified?: boolean;
   };
@@ -52,9 +57,18 @@ function CartoonCardComponent({
   complete_status,
   ageRate,
 }: CartoonCardProps) {
+  const router = useRouter();
+  
   // Generate href from type and uuid if href is not provided
   // Format: /manga/uuid or /novel/uuid
   const generatedHref = href || (type && uuid ? `/${type}/${uuid}` : undefined);
+
+  const handleAuthorClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const encodedUsername = encodeUsername(author.username);
+    router.push(`/profile/${encodedUsername}`);
+  };
 
   const cardContent = (
     <article
@@ -159,8 +173,17 @@ function CartoonCardComponent({
           </Avatar>
           <div className="flex min-w-0 items-center gap-1.5">
             <span
-              className="truncate text-sm text-muted-foreground"
+              onClick={handleAuthorClick}
+              className="truncate text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer"
               itemProp="author"
+              role="link"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleAuthorClick(e as unknown as React.MouseEvent);
+                }
+              }}
             >
               {author.name}
             </span>

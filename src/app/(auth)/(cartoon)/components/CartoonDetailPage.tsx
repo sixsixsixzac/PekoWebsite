@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { OptimizedImage } from "@/components/common/OptimizedImage";
+import { encodeUsername } from "@/lib/utils/username-encode";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -33,6 +34,7 @@ interface CartoonDetailPageProps {
   author: {
     display_name: string;
     uuid: string;
+    username: string;
     avatar?: string;
     is_online?: boolean;
   };
@@ -180,7 +182,7 @@ export function CartoonDetailPage({
                   <div className="flex flex-col min-w-0">
                     <span className="text-muted-foreground text-sm">โดย</span>
                     <Link
-                      href={`/profile/${author.uuid}`}
+                      href={`/profile/${encodeUsername(author.username)}`}
                       className="text-foreground font-semibold text-base hover:text-primary transition-colors truncate"
                       itemProp="name"
                     >

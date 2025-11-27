@@ -36,6 +36,7 @@ export interface CartoonDetailData {
   author: {
     display_name: string;
     uuid: string;
+    username: string;
     avatar?: string;
     is_online?: boolean;
   };
@@ -87,6 +88,7 @@ export async function getCartoonByUuid(
         select: {
           uuid: true,
           displayName: true,
+          uName: true,
           userImg: true,
           level: true,
         },
@@ -208,6 +210,7 @@ export async function getCartoonByUuid(
     author: {
       display_name: cartoon.author.displayName,
       uuid: cartoon.author.uuid,
+      username: cartoon.author.uName || "",
       avatar: constructAuthorAvatarUrl(cartoon.author.userImg),
       is_online: false, // TODO: Implement online status check
     },

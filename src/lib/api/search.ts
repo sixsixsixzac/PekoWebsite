@@ -25,6 +25,7 @@ type CartoonQueryResult = {
   ageRate: string | null;
   author: {
     displayName: string;
+    uName: string;
     userImg: string | null;
     level: number;
   };
@@ -267,7 +268,36 @@ export async function searchCartoons(
   // Check if we need raw SQL for ordering
   const needsRawSQLOrder = ["views", "likes", "chapters", "latest_update"].includes(orderBy);
   
+  // Common select fields to ensure consistency
+  const commonSelect = {
+    uuid: true,
+    title: true,
+    coverImage: true,
+    type: true,
+    completionStatus: true,
+    createdAt: true,
+    categoryMain: true,
+    categorySub: true,
+    ageRate: true,
+    author: {
+      select: {
+        displayName: true,
+        uName: true,
+        userImg: true,
+        level: true,
+      },
+    },
+    _count: {
+      select: {
+        episodeViews: true,
+        favorites: true,
+        episodes: true,
+      },
+    },
+  };
+
   let cartoons: CartoonQueryResult[];
+  let categoryIds = new Set<number>();
   
   if (needsRawSQLOrder) {
     const { conditions, sqlParams } = buildSQLWhereClause({
@@ -289,8 +319,6 @@ export async function searchCartoons(
       : "";
 
     // Build parameterized query to prevent SQL injection
-    // Using $queryRawUnsafe with proper parameterization for dynamic queries
-    // Note: Prisma $queryRawUnsafe uses ? placeholders and expects parameters in order
     const safeRawQuery = `
       SELECT c.p_id, c.uuid
       FROM cartoons c
@@ -309,7 +337,6 @@ export async function searchCartoons(
         skip
       );
 
- 
       const pIds = safeRawResults.map((r) => Number(r.p_id));
 
       if (pIds.length === 0) {
@@ -322,44 +349,28 @@ export async function searchCartoons(
         };
       }
 
-    // Fetch full cartoon data with relations, maintaining order
-    const fetchedCartoons = await prisma.cartoon.findMany({
-      where: {
-        ...where,
-        pId: { in: pIds },
-      },
-      select: {
-        pId: true,
-        uuid: true,
-        title: true,
-        coverImage: true,
-        type: true,
-        completionStatus: true,
-        createdAt: true,
-        categoryMain: true,
-        categorySub: true,
-        ageRate: true,
-        author: {
-          select: {
-            displayName: true,
-            userImg: true,
-            level: true,
-          },
+      // Fetch full cartoon data with relations and categories, maintaining order
+      const fetchedCartoons = await prisma.cartoon.findMany({
+        where: {
+          ...where,
+          pId: { in: pIds },
         },
-        _count: {
-          select: {
-            episodeViews: true,
-            favorites: true,
-            episodes: true,
-          },
+        select: {
+          ...commonSelect,
+          pId: true,
         },
-      },
-    });
+      });
 
-    // Create a map for quick lookup
-    const cartoonsMap = new Map(
-      fetchedCartoons.map((c) => [c.pId, c])
-    );
+      // Collect category IDs while building the map
+      fetchedCartoons.forEach((cartoon) => {
+        if (cartoon.categoryMain) categoryIds.add(cartoon.categoryMain);
+        if (cartoon.categorySub) categoryIds.add(cartoon.categorySub);
+      });
+
+      // Create a map for quick lookup
+      const cartoonsMap = new Map(
+        fetchedCartoons.map((c) => [c.pId, c])
+      );
 
       // Sort cartoons to match raw query order, filtering out any missing items
       cartoons = safeRawResults
@@ -372,37 +383,19 @@ export async function searchCartoons(
         })
         .filter((c): c is CartoonQueryResult => c !== null);
     } catch (error) {
-
+      // Fallback to standard query on error
       cartoons = await prisma.cartoon.findMany({
         where,
         skip,
         take: limit + 1,
         orderBy: { createdAt: "desc" },
-        select: {
-          uuid: true,
-          title: true,
-          coverImage: true,
-          type: true,
-          completionStatus: true,
-          createdAt: true,
-          categoryMain: true,
-          categorySub: true,
-          ageRate: true,
-          author: {
-            select: {
-              displayName: true,
-              userImg: true,
-              level: true,
-            },
-          },
-          _count: {
-            select: {
-              episodeViews: true,
-              favorites: true,
-              episodes: true,
-            },
-          },
-        },
+        select: commonSelect,
+      });
+      
+      // Collect category IDs
+      cartoons.forEach((cartoon) => {
+        if (cartoon.categoryMain) categoryIds.add(cartoon.categoryMain);
+        if (cartoon.categorySub) categoryIds.add(cartoon.categorySub);
       });
     }
   } else {
@@ -412,59 +405,43 @@ export async function searchCartoons(
       skip,
       take: limit + 1,
       orderBy: { createdAt: "desc" },
-      select: {
-        uuid: true,
-        title: true,
-        coverImage: true,
-        type: true,
-        completionStatus: true,
-        createdAt: true,
-        categoryMain: true,
-        categorySub: true,
-        ageRate: true,
-        author: {
-          select: {
-            displayName: true,
-            userImg: true,
-            level: true,
-          },
-        },
-        _count: {
-          select: {
-            episodeViews: true,
-            favorites: true,
-            episodes: true,
-          },
-        },
-      },
+      select: commonSelect,
+    });
+    
+    // Collect category IDs
+    cartoons.forEach((cartoon) => {
+      if (cartoon.categoryMain) categoryIds.add(cartoon.categoryMain);
+      if (cartoon.categorySub) categoryIds.add(cartoon.categorySub);
     });
   }
 
   const hasMore = cartoons.length > limit;
   const cartoonsToReturn = hasMore ? cartoons.slice(0, limit) : cartoons;
 
-  // Collect unique category IDs efficiently
-  const categoryIds = new Set<number>();
-  for (const cartoon of cartoonsToReturn) {
-    if (cartoon.categoryMain) categoryIds.add(cartoon.categoryMain);
-    if (cartoon.categorySub) categoryIds.add(cartoon.categorySub);
-  }
-
-  // Fetch categories only if needed
-  const categoryMap = new Map<number, string>();
-  if (categoryIds.size > 0) {
-    const categories = await prisma.category.findMany({
-      where: {
-        id: { in: Array.from(categoryIds) },
-        status: 1,
-      },
-      select: {
-        id: true,
-        categoryName: true,
-      },
-    });
-    categories.forEach((cat) => categoryMap.set(cat.id, cat.categoryName));
-  }
+  // Fetch categories in parallel with total count (if needed)
+  const [categoryMap, total] = await Promise.all([
+    // Fetch categories only if needed
+    categoryIds.size > 0
+      ? prisma.category
+          .findMany({
+            where: {
+              id: { in: Array.from(categoryIds) },
+              status: 1,
+            },
+            select: {
+              id: true,
+              categoryName: true,
+            },
+          })
+          .then((categories) => {
+            const map = new Map<number, string>();
+            categories.forEach((cat) => map.set(cat.id, cat.categoryName));
+            return map;
+          })
+      : Promise.resolve(new Map<number, string>()),
+    // Get total count for pagination
+    prisma.cartoon.count({ where }),
+  ]);
 
   // Transform to CartoonCardProps format
   const data: CartoonCardProps[] = cartoonsToReturn.map((cartoon) => {
@@ -480,6 +457,7 @@ export async function searchCartoons(
       coverImage: constructImageUrl(cartoon.coverImage, "/images/post_img/default.png"),
       author: {
         name: cartoon.author.displayName,
+        username: cartoon.author.uName,
         avatar: constructAuthorAvatarUrl(cartoon.author.userImg),
         verified: cartoon.author.level >= 2,
       },
@@ -493,9 +471,6 @@ export async function searchCartoons(
       ageRate: cartoon.ageRate || undefined,
     };
   });
-
-  // Get total count for pagination (can be optimized further if not always needed)
-  const total = await prisma.cartoon.count({ where });
 
   return {
     data,
