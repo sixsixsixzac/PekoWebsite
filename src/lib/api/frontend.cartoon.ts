@@ -160,10 +160,13 @@ export async function getCartoonByUuid(
   if (user?.id) {
     const userId = parseInt(user.id);
     const now = new Date();
+    // Get episode IDs for this cartoon first
+    const episodeIds = cartoon.episodes.map(ep => ep.epId);
+    
     const purchases = await prisma.epShop.findMany({
       where: {
         userId: userId,
-        pId: cartoon.pId,
+        epId: { in: episodeIds },
       },
       select: {
         epId: true,

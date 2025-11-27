@@ -123,7 +123,6 @@ export interface EpShopBase {
   epsId: number
   epId: number | null
   epNo: number
-  pId: number
   point: number
   remainPoint: number
   userId: number

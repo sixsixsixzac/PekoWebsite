@@ -293,32 +293,20 @@ export async function purchaseEpisode(
     // Get userId from server-side session
     const session = await getServerSession(authConfig);
     if (!session?.user?.id) {
-      return { success: false, error: "Unauthorized" };
+      return { success: false, error: "ไม่ได้รับอนุญาต" };
     }
 
     const userId = parseInt(session.user.id);
     if (isNaN(userId)) {
-      return { success: false, error: "Invalid user ID" };
+      return { success: false, error: "ไม่พบผู้ใช้กรุณาเข้าสู่ระบบ" };
     }
 
     // Validate episode UUIDs array
     if (!Array.isArray(episodeUuids) || episodeUuids.length === 0) {
-      return { success: false, error: "No episodes specified" };
+      return { success: false, error: "ไม่ได้ระบุตอน" };
     }
 
-    // Get user points from database
-    const userProfile = await prisma.userProfile.findUnique({
-      where: { id: userId },
-      select: { point: true },
-    });
-
-    if (!userProfile) {
-      return { success: false, error: "User not found" };
-    }
-
-    const userPoints = userProfile.point;
-
-    // Fetch all episodes by UUIDs
+    // Fetch all episodes by UUIDs first
     const episodes = await prisma.mangaEp.findMany({
       where: {
         uuid: { in: episodeUuids },
@@ -335,21 +323,33 @@ export async function purchaseEpisode(
 
     // Validate all episodes were found
     if (episodes.length !== episodeUuids.length) {
-      return { success: false, error: "One or more episodes not found" };
+      return { success: false, error: "ไม่พบตอนที่ระบุ" };
     }
 
     // Filter out free episodes
     const paidEpisodes = episodes.filter((ep) => ep.epPrice > 0);
     if (paidEpisodes.length === 0) {
-      return { success: false, error: "All selected episodes are free" };
+      return { success: false, error: "ตอนที่เลือกทั้งหมดฟรี" };
     }
 
-    // Calculate total price
+    // Calculate total price from all episodes
     const totalPrice = paidEpisodes.reduce((sum, ep) => sum + ep.epPrice, 0);
 
-    // Check if user has enough points
+    // Get user points from database
+    const userProfile = await prisma.userProfile.findUnique({
+      where: { id: userId },
+      select: { point: true },
+    });
+
+    if (!userProfile) {
+      return { success: false, error: "ไม่พบผู้ใช้" };
+    }
+
+    const userPoints = userProfile.point;
+
+    // Check if user has enough points BEFORE any other operations
     if (userPoints < totalPrice) {
-      return { success: false, error: "Insufficient points" };
+      return { success: false, error: "พอยต์ไม่เพียงพอ" };
     }
 
     // Check for already owned episodes
@@ -373,61 +373,61 @@ export async function purchaseEpisode(
     const alreadyOwned = paidEpisodes.filter((ep) => ownedEpIds.has(ep.epId));
 
     if (alreadyOwned.length > 0) {
-      return { success: false, error: "One or more episodes are already owned" };
+      return { success: false, error: "ตอนที่เลือกบางตอนเป็นเจ้าของแล้ว" };
     }
 
     // Start transaction to purchase all episodes
     await prisma.$transaction(async (tx) => {
+      // Calculate remaining points for each episode upfront
       let remainingPoints = userPoints;
-
-      // Deduct total points from user
-      await tx.userProfile.update({
-        where: { id: userId },
-        data: {
-          point: {
-            decrement: totalPrice,
-          },
-        },
+      const purchaseData = paidEpisodes.map((episode) => {
+        remainingPoints -= episode.epPrice;
+        return {
+          userId: Number(userId),
+          epId: Number(episode.epId),
+          epNo: Number(episode.epNo),
+          point: Number(episode.epPrice),
+          remainPoint: Number(remainingPoints),
+          lockDurationDays: episode.lockDurationDays ? Number(episode.lockDurationDays) : null,
+        };
       });
 
-      // Create purchase records for each episode
-      for (const episode of paidEpisodes) {
-        remainingPoints -= episode.epPrice;
+      // Build batch INSERT query with all purchase records at once
+      // Using SQL to handle lock_after_datetime calculation efficiently
+      // All values are validated numbers from database queries, so safe for batch insert
+      const values = purchaseData
+        .map(
+          (data) =>
+            `(${data.userId}, ${data.epId}, ${data.epNo}, ${data.point}, ${data.remainPoint}, ${
+              data.lockDurationDays !== null
+                ? `DATE_ADD(NOW(), INTERVAL ${data.lockDurationDays} DAY)`
+                : "NULL"
+            })`
+        )
+        .join(", ");
 
-        if (episode.lockDurationDays) {
-          // Use SQL to calculate lockAfterDatetime: DATE_ADD(NOW(), INTERVAL lockDurationDays DAY)
-          await tx.$executeRaw`
-            INSERT INTO ep_shop (
-              user_id, p_id, ep_id, ep_no, point, remain_point, lock_after_datetime
-            ) VALUES (
-              ${userId}, ${episode.pId}, ${episode.epId}, ${episode.epNo}, 
-              ${episode.epPrice}, ${remainingPoints}, 
-              DATE_ADD(NOW(), INTERVAL ${episode.lockDurationDays} DAY)
-            )
-          `;
-        } else {
-          // Create purchase record without lockAfterDatetime
-          await tx.epShop.create({
-            data: {
-              userId: userId,
-              pId: episode.pId,
-              epId: episode.epId,
-              epNo: episode.epNo,
-              point: episode.epPrice,
-              remainPoint: remainingPoints,
-              lockAfterDatetime: null,
-            },
-          });
-        }
-      }
+      await tx.$executeRawUnsafe(`
+        INSERT INTO ep_shop (
+          user_id, ep_id, ep_no, point, remain_point, lock_after_datetime
+        ) VALUES ${values}
+      `);
+
+      // Deduct total points from user AFTER all records are created
+      // This ensures the transaction is atomic
+      await tx.$executeRaw`
+        UPDATE user_profile 
+        SET point = point - ${totalPrice}
+        WHERE id = ${userId}
+      `;
     });
 
     return { success: true };
   } catch (error) {
     console.error("Error purchasing episodes:", error);
-    return { success: false, error: "Internal server error" };
+    return { success: false, error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" };
   }
 }
+
 
 /**
  * Get novel episode content

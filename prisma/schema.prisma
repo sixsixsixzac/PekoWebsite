@@ -183,7 +183,6 @@ model Cartoon {
   comments         CartoonComment[]
   favorites        MangaFavorite[]
   episodeViews     MangaEpView[]
-  episodePurchases EpShop[]
 
   @@index([title(length: 255)])
   @@index([authorId])
@@ -240,7 +239,6 @@ model EpShop {
   epsId             Int       @id @default(autoincrement()) @map("eps_id") @db.Int
   epId              Int?      @map("ep_id") @db.Int
   epNo              Int       @map("ep_no") @db.Int
-  pId               Int       @map("p_id") @db.Int
   point             Float     @default(0) @db.Float
   remainPoint       Float     @default(0) @map("remain_point") @db.Float
   userId            Int       @map("user_id") @db.Int
@@ -248,11 +246,9 @@ model EpShop {
   createdAt         DateTime  @default(dbgenerated("CURRENT_TIMESTAMP")) @map("created_at") @db.DateTime
 
   episode MangaEp?    @relation(fields: [epId], references: [epId], onDelete: Cascade, onUpdate: Cascade)
-  cartoon Cartoon     @relation(fields: [pId], references: [pId], onDelete: Cascade)
   user    UserProfile @relation(fields: [userId], references: [id])
 
   @@index([epNo])
-  @@index([pId])
   @@index([userId])
   @@index([epId])
   @@map("ep_shop")

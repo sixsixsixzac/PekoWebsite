@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -17,10 +17,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Check, Clock, ChevronDown, ShoppingCart } from "lucide-react";
+import { Check, Clock, ChevronDown, ShoppingCart, Loader2 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCoins } from "@fortawesome/free-solid-svg-icons";
 import { fetchService } from "@/lib/services/fetch-service";
+import { from, of } from "rxjs";
+import { catchError, tap, finalize } from "rxjs/operators";
+import { toast } from "sonner";
 
 interface Episode {
   uuid: string;
@@ -41,7 +44,7 @@ interface EpisodeListProps {
 }
 
 export function EpisodeList({ 
-  episodes, 
+  episodes: initialEpisodes, 
   type, 
   uuid, 
   checkedEpisodes: externalCheckedEpisodes,
@@ -52,10 +55,18 @@ export function EpisodeList({
   const router = useRouter();
   const isLoggedIn = !!session?.user;
   const [internalCheckedEpisodes, setInternalCheckedEpisodes] = useState<Set<string>>(new Set());
-  const [checkedGroups, setCheckedGroups] = useState<Set<number>>(new Set());
   const [openGroups, setOpenGroups] = useState<Set<number>>(new Set());
   const [buyDialogOpen, setBuyDialogOpen] = useState(false);
   const [userPoints, setUserPoints] = useState<number | null>(propUserPoints ?? null);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const purchaseSubscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
+  // Local state for episodes to update ownership after purchase
+  const [episodes, setEpisodes] = useState<Episode[]>(initialEpisodes);
+
+  // Update episodes when initialEpisodes prop changes
+  useEffect(() => {
+    setEpisodes(initialEpisodes);
+  }, [initialEpisodes]);
 
   // Fetch user points if not provided as prop
   useEffect(() => {
@@ -108,6 +119,17 @@ export function EpisodeList({
     return groups;
   }, [episodes]);
 
+  // Expand all groups by default when groupedEpisodes changes
+  useEffect(() => {
+    if (groupedEpisodes.length > 0 && openGroups.size === 0) {
+      const allGroups = new Set<number>();
+      for (let i = 0; i < groupedEpisodes.length; i++) {
+        allGroups.add(i);
+      }
+      setOpenGroups(allGroups);
+    }
+  }, [groupedEpisodes, openGroups.size]);
+
   // Calculate selected episodes for purchase (not owned, not free, checked)
   // Sorted by episode number in descending order
   const selectedEpisodesForPurchase = useMemo(() => {
@@ -142,12 +164,99 @@ export function EpisodeList({
   };
 
   const handleConfirmPurchase = () => {
-    // TODO: Implement actual purchase logic here
-    console.log("Purchasing episodes:", selectedEpisodesForPurchase);
-    setBuyDialogOpen(false);
-    // After successful purchase, you might want to clear checked episodes
-    // updateCheckedEpisodes(() => new Set());
+    if (selectedEpisodesForPurchase.length === 0 || !hasEnoughPoints || isPurchasing) {
+      return;
+    }
+
+    const episodeUuids = selectedEpisodesForPurchase.map((ep) => ep.uuid);
+    
+    setIsPurchasing(true);
+
+    // Create observable from fetch service promise
+    const purchaseObservable = from(
+      fetchService.post<{ success: boolean; message?: string; error?: string }>(
+        "/api/episodes/purchase",
+        { episodeUuids }
+      )
+    ).pipe(
+      // Handle successful purchase
+      tap((response) => {
+        if (response.success) {
+          toast.success(response.message || "ซื้อตอนสำเร็จ", {
+            description: `ซื้อ ${selectedEpisodesForPurchase.length} ตอนเรียบร้อย`,
+          });
+
+          // Update episodes to mark purchased ones as owned
+          setEpisodes((prevEpisodes) => {
+            const purchasedUuids = new Set(episodeUuids);
+            return prevEpisodes.map((ep) => {
+              if (purchasedUuids.has(ep.uuid)) {
+                return {
+                  ...ep,
+                  isOwned: true,
+                  lockAfterDatetime: null, // Permanent ownership
+                };
+              }
+              return ep;
+            });
+          });
+
+          // Update user points after successful purchase
+          const newPoints = userPoints !== null ? userPoints - totalPrice : null;
+          setUserPoints(newPoints);
+
+          // Clear checked episodes
+          updateCheckedEpisodes(() => new Set());
+
+          // Close dialog
+          setBuyDialogOpen(false);
+
+          // Refresh user points from server to ensure accuracy
+          if (isLoggedIn && session?.user?.id) {
+            fetchService
+              .get<{ points: number }>("/api/user/points")
+              .then((data) => {
+                setUserPoints(data.points ?? 0);
+              })
+              .catch((error) => {
+                console.error("Failed to refresh user points:", error);
+              });
+          }
+        } else {
+          toast.error(response.error || "เกิดข้อผิดพลาดในการซื้อ");
+        }
+      }),
+      // Handle errors
+      catchError((error) => {
+        const errorMessage = 
+          error && typeof error === 'object' && 'data' in error
+            ? (error.data as { error?: string })?.error || "เกิดข้อผิดพลาดในการซื้อ"
+            : error && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
+            ? error.message
+            : "เกิดข้อผิดพลาดในการซื้อ";
+        
+        toast.error(errorMessage);
+        return of(null);
+      }),
+      // Always reset loading state
+      finalize(() => {
+        setIsPurchasing(false);
+      })
+    );
+
+    // Subscribe to the observable
+    const subscription = purchaseObservable.subscribe();
+    purchaseSubscriptionRef.current = subscription;
   };
+
+  // Cleanup subscription on unmount
+  useEffect(() => {
+    return () => {
+      if (purchaseSubscriptionRef.current) {
+        purchaseSubscriptionRef.current.unsubscribe();
+      }
+    };
+  }, []);
 
   return (
     <>
@@ -180,6 +289,13 @@ export function EpisodeList({
         const firstEp = group[0];
         const lastEp = group[group.length - 1];
         const allFree = group.every(ep => ep.price === 0);
+        // Check if all episodes are owned or free (no need for checkbox)
+        const allOwnedOrFree = group.every(ep => ep.price === 0 || ep.isOwned);
+        // Get purchasable episodes (not owned, not free)
+        const purchasableEpisodes = group.filter(ep => !ep.isOwned && ep.price > 0);
+        // Check if all purchasable episodes in the group are checked
+        const allPurchasableChecked = purchasableEpisodes.length > 0 && 
+          purchasableEpisodes.every(ep => checkedEpisodes.has(ep.uuid));
         // Show smaller number first, then bigger number (since sorted DESC, lastEp is smaller)
         const minNumber = lastEp?.number || 0;
         const maxNumber = firstEp?.number || 0;
@@ -205,28 +321,20 @@ export function EpisodeList({
               <Card className="bg-muted/50 p-3 sm:p-4 cursor-pointer hover:bg-muted transition-colors">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    {isLoggedIn && !allFree && (
+                    {isLoggedIn && !allOwnedOrFree && (
                       <Checkbox 
                         className="shrink-0"
-                        checked={checkedGroups.has(groupIndex)}
+                        checked={allPurchasableChecked}
                         onCheckedChange={(checked) => {
-                          // Update checked groups state
-                          setCheckedGroups((prev) => {
-                            const newSet = new Set(prev);
-                            if (checked) {
-                              newSet.add(groupIndex);
-                            } else {
-                              newSet.delete(groupIndex);
-                            }
-                            return newSet;
-                          });
-                          
-                          // Update checked episodes state separately (not inside setState)
+                          // Update checked episodes state - only select episodes that are not owned and not free
                           updateCheckedEpisodes((prevEp) => {
                             const newEpSet = new Set(prevEp);
                             if (checked) {
                               group.forEach((ep) => {
-                                newEpSet.add(ep.uuid);
+                                // Only add episodes that can be purchased (not owned, not free)
+                                if (!ep.isOwned && ep.price > 0) {
+                                  newEpSet.add(ep.uuid);
+                                }
                               });
                             } else {
                               group.forEach((ep) => {
@@ -242,7 +350,7 @@ export function EpisodeList({
                     <span className="font-medium text-sm sm:text-base text-foreground truncate">
                       ตอนที่ {minNumber} - {maxNumber}
                     </span>
-                    {isLoggedIn && allFree && (
+                    {isLoggedIn && allOwnedOrFree && (
                       <Check className="size-4 sm:size-5 text-green-600 dark:text-green-400 shrink-0" />
                     )}
                   </div>
@@ -469,10 +577,17 @@ export function EpisodeList({
             </Button>
             <Button
               onClick={handleConfirmPurchase}
-              disabled={!hasEnoughPoints || userPoints === null}
+              disabled={!hasEnoughPoints || userPoints === null || isPurchasing}
               className="bg-green-600 hover:bg-green-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              ยืนยันการซื้อ
+              {isPurchasing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  กำลังซื้อ...
+                </>
+              ) : (
+                "ยืนยันการซื้อ"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
