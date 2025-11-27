@@ -3,7 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { generateMetadata as generatePageMetadata } from "@/lib/utils/metadata";
 import type { Metadata } from "next";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { BookOpen, Eye, Heart } from "lucide-react";
+import { BookOpen, Eye, Heart, Trophy } from "lucide-react";
+import Link from "next/link";
+import { FollowButton } from "@/components/common/FollowButton";
 import { constructAuthorAvatarUrl, constructImageUrl } from "@/lib/utils/image-url";
 import { CartoonCard, type CartoonCardProps } from "@/components/common/CartoonCard";
 import { cn } from "@/lib/utils";
@@ -169,12 +171,26 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   const { user, cartoons, stats } = profileData;
 
+  // Mock super fans data
+  const superFans = [
+    { id: 1, name: "chat0077", username: "chat0077", avatar: null },
+    { id: 2, name: "Aphicha...", username: "aphicha", avatar: null },
+    { id: 3, name: "Kittitas ...", username: "kittitas", avatar: null },
+    { id: 4, name: "Stiecker", username: "stiecker", avatar: null },
+    { id: 5, name: "teerasu...", username: "teerasu", avatar: null },
+    { id: 6, name: "rattapo...", username: "rattapo", avatar: null },
+    { id: 7, name: "CHaa ZZ...", username: "chaazz", avatar: null },
+    { id: 8, name: "Dakon", username: "dakon", avatar: null },
+    { id: 9, name: "ณัฐสิทธิ์ เ...", username: "nattasit", avatar: null },
+    { id: 10, name: "Sukuna", username: "sukuna", avatar: null },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <main className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 sm:py-10 lg:py-12">
         {/* Profile Header */}
         <div className="flex flex-col gap-6 rounded-lg border bg-card p-6 shadow-sm sm:flex-row sm:items-center sm:gap-8">
-          <Avatar className="size-24 shrink-0 border-4 border-background shadow-lg">
+          <Avatar className="mx-auto size-24 shrink-0 border-4 border-background shadow-lg sm:mx-0">
             <AvatarImage
               src={constructAuthorAvatarUrl(user.userImg)}
               alt={`${user.displayName} avatar`}
@@ -185,14 +201,14 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           </Avatar>
 
           <div className="flex flex-1 flex-col gap-3">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
               <h1 className="text-2xl font-bold text-card-foreground sm:text-3xl">
                 {user.displayName}
               </h1>
             </div>
 
             {/* Stats */}
-            <div className="flex flex-wrap gap-4 sm:gap-6">
+            <div className="flex justify-between gap-4 sm:justify-start sm:gap-6">
               <div className="flex items-center gap-2">
                 <BookOpen className="size-4 text-muted-foreground" />
                 <div className="flex flex-col">
@@ -223,6 +239,68 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                 </div>
               </div>
             </div>
+
+            {/* Follow Button - Mobile: Full Width Under Stats */}
+            <div className="w-full md:hidden">
+              <FollowButton className="w-full" />
+            </div>
+          </div>
+
+          {/* Follow Button - Desktop: Right Side */}
+          <div className="hidden md:flex shrink-0">
+            <FollowButton />
+          </div>
+        </div>
+
+        {/* Super Fans Section */}
+        <div className="rounded-lg border bg-card p-6 shadow-sm">
+          <div className="mb-4 flex items-center gap-2">
+            <Trophy className="size-5 text-yellow-500 fill-yellow-500" />
+            <h2 className="text-lg font-semibold text-card-foreground">แฟนตัวยง (Top Fan)</h2>
+          </div>
+          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            {superFans.map((fan, index) => {
+              const rank = index + 1;
+              const getMedalStyle = () => {
+                if (rank === 1) return "text-yellow-500 fill-yellow-500";
+                if (rank === 2) return "text-gray-300 fill-gray-300";
+                if (rank === 3) return "text-amber-700 fill-amber-700";
+                return "";
+              };
+
+              return (
+                <Link
+                  key={fan.id}
+                  href={`/profile/${encodeURIComponent(fan.username)}`}
+                  className="flex flex-col items-center gap-2 shrink-0 min-w-[80px]"
+                >
+                  <div className="relative">
+                    <Avatar className="size-14 border-2 border-background">
+                      <AvatarImage
+                        src={fan.avatar ? constructAuthorAvatarUrl(fan.avatar) : undefined}
+                        alt={fan.name}
+                      />
+                      <AvatarFallback className="text-sm">
+                        {fan.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {rank <= 3 && (
+                      <div className="absolute -top-1 -right-1 z-10">
+                        <div className={cn("relative flex items-center justify-center", getMedalStyle())}>
+                          <Trophy className="size-6 drop-shadow-md" />
+                          <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white drop-shadow-sm">
+                            {rank}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-center text-xs font-medium text-card-foreground line-clamp-1 max-w-[80px]">
+                    {fan.name}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </div>
 
