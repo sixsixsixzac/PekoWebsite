@@ -19,6 +19,10 @@ export function constructAuthorAvatarUrl(userImg: string | null): string | undef
   if (userImg.startsWith("http://") || userImg.startsWith("https://")) {
     return userImg;
   }
+  // Handle new uploads path
+  if (userImg.startsWith("uploads/")) {
+    return `/${userImg}`;
+  }
   return `/images/${userImg}`;
 }
 

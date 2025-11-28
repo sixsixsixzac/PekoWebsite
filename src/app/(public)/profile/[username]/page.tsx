@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { generateMetadata as generatePageMetadata } from "@/lib/utils/metadata";
 import type { Metadata } from "next";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { BookOpen, Eye, Heart, Trophy } from "lucide-react";
+import { BookOpen, Trophy, UserPlus, Users, CheckCircle2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { FollowUserButtonClient } from "@/components/common/FollowUserButtonClient";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -11,15 +11,27 @@ import { constructAuthorAvatarUrl, constructImageUrl } from "@/lib/utils/image-u
 import { CartoonCard, type CartoonCardProps } from "@/components/common/CartoonCard";
 import { cn } from "@/lib/utils";
 import { decodeUsername } from "@/lib/utils/username-encode";
+import { ProfileAvatar } from "@/components/common/ProfileAvatar";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 interface ProfilePageProps {
   params: Promise<{ username: string }>;
 }
 
+function formatMetricNumber(num: number): string {
+  if (num >= 1000000) {
+    return `${(num / 1000000).toFixed(1)}M`;
+  }
+  if (num >= 1000) {
+    return `${(num / 1000).toFixed(1)}K`;
+  }
+  return num.toString();
+}
+
 async function getUserProfile(username: string) {
   // Decode the obfuscated username from URL
   const decodedUsername = decodeUsername(decodeURIComponent(username));
-  
+
   const user = await prisma.userProfile.findFirst({
     where: {
       uName: decodedUsername,
@@ -33,6 +45,11 @@ async function getUserProfile(username: string) {
       point: true,
       sales: true,
       createdAt: true,
+      detail: {
+        select: {
+          status: true,
+        },
+      },
     },
   });
 
@@ -133,10 +150,18 @@ async function getUserProfile(username: string) {
     };
   });
 
-  // Get total stats
-  const totalViews = cartoons.reduce((sum, c) => sum + c._count.episodeViews, 0);
-  const totalLikes = cartoons.reduce((sum, c) => sum + c._count.favorites, 0);
-  const totalEpisodes = cartoons.reduce((sum, c) => sum + c._count.episodes, 0);
+  // Get follower and following counts
+  const followerCount = await prisma.userFollower.count({
+    where: {
+      followingId: user.id,
+    },
+  });
+
+  const followingCount = await prisma.userFollower.count({
+    where: {
+      followerId: user.id,
+    },
+  });
 
   // Check if current user is following this profile user
   let isFollowing = false;
@@ -159,9 +184,8 @@ async function getUserProfile(username: string) {
     cartoons: cartoonCards,
     stats: {
       totalCartoons: cartoons.length,
-      totalViews,
-      totalLikes,
-      totalEpisodes,
+      followers: followerCount,
+      following: followingCount,
     },
     isFollowing,
   };
@@ -211,76 +235,103 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       <main className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 sm:py-10 lg:py-12">
         {/* Profile Header */}
         <div className="flex flex-col gap-6 rounded-lg border bg-card p-6 shadow-sm sm:flex-row sm:items-center sm:gap-8">
-          <Avatar className="mx-auto size-24 shrink-0 border-4 border-background shadow-lg sm:mx-0">
-            <AvatarImage
-              src={constructAuthorAvatarUrl(user.userImg)}
-              alt={`${user.displayName} avatar`}
-            />
-            <AvatarFallback className="text-2xl">
-              {user.displayName.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <ProfileAvatar
+            allowUpload={true}
+            userImg={user.userImg}
+            displayName={user.displayName}
+            isOwnProfile={Boolean(
+              isLoggedIn && currentUser?.id && parseInt(currentUser.id) === user.id
+            )}
+          />
 
           <div className="flex flex-1 flex-col gap-3">
-            <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-              <h1 className="text-2xl font-bold text-card-foreground sm:text-3xl">
-                {user.displayName}
-              </h1>
+            <div className="flex flex-col items-center gap-1 sm:items-start sm:text-left">
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+                <h1 className="text-2xl font-bold text-card-foreground sm:text-3xl">
+                  {user.displayName}
+                </h1>
+                {user.detail?.status === "approve" ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex cursor-help">
+                        <CheckCircle2 className="size-5 text-blue-500  shrink-0" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>บัญชีที่ยืนยันตัวตนนักเขียนแล้ว</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex cursor-help">
+                        <AlertCircle className="size-5 text-muted-foreground shrink-0" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>บัญชีที่ยังไม่ยืนยันตัวตนนักเขียน</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+              {isLoggedIn && currentUser?.id && parseInt(currentUser.id) === user.id && user.uuid && (
+                <span className="text-xs text-muted-foreground text-center sm:text-left">
+                  {user.uuid}
+                </span>
+              )}
             </div>
 
             {/* Stats */}
-            <div className="flex justify-between gap-4 sm:justify-start sm:gap-6">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-wrap justify-between gap-6 sm:justify-start sm:gap-8">
+              <div className="flex items-center gap-2.5">
                 <BookOpen className="size-4 text-muted-foreground" />
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold">{stats.totalCartoons}</span>
+                  <span className="text-sm font-semibold text-foreground">
+                    {formatMetricNumber(stats.totalCartoons)}
+                  </span>
                   <span className="text-xs text-muted-foreground">เรื่อง</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Eye className="size-4 text-muted-foreground" />
+              <div className="flex items-center gap-2.5">
+                <Users className="size-4 text-muted-foreground" />
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold">
-                    {stats.totalViews >= 1000
-                      ? `${(stats.totalViews / 1000).toFixed(1)}K`
-                      : stats.totalViews}
+                  <span className="text-sm font-semibold text-foreground">
+                    {formatMetricNumber(stats.followers)}
                   </span>
-                  <span className="text-xs text-muted-foreground">ยอดดู</span>
+                  <span className="text-xs text-muted-foreground">ผู้ติดตาม</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Heart className="size-4 text-muted-foreground" />
+              <div className="flex items-center gap-2.5">
+                <UserPlus className="size-4 text-muted-foreground" />
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold">
-                    {stats.totalLikes >= 1000
-                      ? `${(stats.totalLikes / 1000).toFixed(1)}K`
-                      : stats.totalLikes}
+                  <span className="text-sm font-semibold text-foreground">
+                    {formatMetricNumber(stats.following)}
                   </span>
-                  <span className="text-xs text-muted-foreground">ไลค์</span>
+                  <span className="text-xs text-muted-foreground">กำลังติดตาม</span>
                 </div>
               </div>
             </div>
 
             {/* Follow Button - Mobile: Full Width Under Stats */}
-            {isLoggedIn && parseInt(currentUser.id) !== user.id && (
-            <div className="w-full md:hidden">
+            {isLoggedIn && currentUser?.id && parseInt(currentUser.id) !== user.id && (
+              <div className="w-full md:hidden">
                 <FollowUserButtonClient
                   targetUserUuid={user.uuid}
                   initialIsFollowing={isFollowing}
                   className="w-full"
                 />
-            </div>
+              </div>
             )}
           </div>
 
           {/* Follow Button - Desktop: Right Side */}
-          {isLoggedIn && parseInt(currentUser.id) !== user.id && (
-          <div className="hidden md:flex shrink-0">
+          {isLoggedIn && currentUser?.id && parseInt(currentUser.id) !== user.id && (
+            <div className="hidden md:flex shrink-0">
               <FollowUserButtonClient
                 targetUserUuid={user.uuid}
                 initialIsFollowing={isFollowing}
               />
-          </div>
+            </div>
           )}
         </div>
 
@@ -370,4 +421,5 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     </div>
   );
 }
+
 
