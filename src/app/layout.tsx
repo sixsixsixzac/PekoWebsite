@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/providers/ThemeProvider";
 import { SessionProvider } from "@/lib/providers/SessionProvider";
+import { WebSettingProviderWrapper } from "@/lib/providers/WebSettingProviderWrapper";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -44,17 +45,19 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <SessionProvider>
-            <AppLayout>{children}</AppLayout>
-            <Toaster />
-          </SessionProvider>
-        </ThemeProvider>
+        <WebSettingProviderWrapper>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <SessionProvider>
+              <AppLayout>{children}</AppLayout>
+              <Toaster />
+            </SessionProvider>
+          </ThemeProvider>
+        </WebSettingProviderWrapper>
       </body>
     </html>
   );

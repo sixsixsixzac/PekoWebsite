@@ -17,6 +17,8 @@ import {
   Shield,
   type LucideIcon,
 } from "lucide-react"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faCoins } from "@fortawesome/free-solid-svg-icons"
 import {
   Sheet,
   SheetContent,
@@ -81,6 +83,7 @@ export function MobileMenu({ menuItems, title = "เมนู" }: MobileMenuProp
             {menuItems.map((item) => {
               const Icon = iconMap[item.icon] || Home
               const isActive = pathname === item.href
+              const isCoins = item.icon === "Coins"
               return (
                 <Link
                   key={item.href}
@@ -101,14 +104,26 @@ export function MobileMenu({ menuItems, title = "เมนู" }: MobileMenuProp
                         : "bg-muted/50 group-hover:bg-primary/10"
                     )}
                   >
-                    <Icon
-                      className={cn(
-                        "h-5 w-5 transition-colors",
-                        isActive
-                          ? "text-primary"
-                          : "text-muted-foreground group-hover:text-primary"
-                      )}
-                    />
+                    {isCoins ? (
+                      <FontAwesomeIcon
+                        icon={faCoins}
+                        className={cn(
+                          "text-xs mr-1 transition-colors",
+                          isActive
+                            ? "text-yellow-600 dark:text-yellow-400"
+                            : "text-yellow-600 dark:text-yellow-400 group-hover:text-yellow-500"
+                        )}
+                      />
+                    ) : (
+                      <Icon
+                        className={cn(
+                          "h-5 w-5 transition-colors",
+                          isActive
+                            ? "text-primary"
+                            : "text-muted-foreground group-hover:text-primary"
+                        )}
+                      />
+                    )}
                   </div>
                   <span className="flex-1">{item.label}</span>
                 </Link>

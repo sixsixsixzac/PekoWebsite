@@ -2,31 +2,17 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { generateMetadata as generatePageMetadata } from "@/lib/utils/metadata";
 import type { Metadata } from "next";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { BookOpen, Trophy, UserPlus, Users, CheckCircle2, AlertCircle } from "lucide-react";
-import Link from "next/link";
-import { FollowUserButtonClient } from "@/components/common/FollowUserButtonClient";
 import { getCurrentUser } from "@/lib/auth/session";
 import { constructAuthorAvatarUrl, constructImageUrl } from "@/lib/utils/image-url";
-import { CartoonCard, type CartoonCardProps } from "@/components/common/CartoonCard";
-import { cn } from "@/lib/utils";
+import { type CartoonCardProps } from "@/components/common/CartoonCard";
 import { decodeUsername } from "@/lib/utils/username-encode";
-import { ProfileAvatar } from "@/components/common/ProfileAvatar";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { ProfileSection } from "../components/ProfileSection";
+import { ProfileCartoonList } from "../components/ProfileCartoonList";
 
 interface ProfilePageProps {
   params: Promise<{ username: string }>;
 }
 
-function formatMetricNumber(num: number): string {
-  if (num >= 1000000) {
-    return `${(num / 1000000).toFixed(1)}M`;
-  }
-  if (num >= 1000) {
-    return `${(num / 1000).toFixed(1)}K`;
-  }
-  return num.toString();
-}
 
 async function getUserProfile(username: string) {
   // Decode the obfuscated username from URL
@@ -207,216 +193,29 @@ export async function generateMetadata({
 export default async function ProfilePage({ params }: ProfilePageProps) {
   const { username } = await params;
   const profileData = await getUserProfile(username);
-  console.log(profileData);
-  if (!profileData) {
-    notFound();
-  }
+  
+  if (!profileData) notFound();
 
   const { user, cartoons, stats, isFollowing } = profileData;
   const currentUser = await getCurrentUser();
   const isLoggedIn = !!currentUser?.id;
 
-  // Mock super fans data
-  const superFans = [
-    { id: 1, name: "chat0077", username: "chat0077", avatar: null },
-    { id: 2, name: "Aphicha...", username: "aphicha", avatar: null },
-    { id: 3, name: "Kittitas ...", username: "kittitas", avatar: null },
-    { id: 4, name: "Stiecker", username: "stiecker", avatar: null },
-    { id: 5, name: "teerasu...", username: "teerasu", avatar: null },
-    { id: 6, name: "rattapo...", username: "rattapo", avatar: null },
-    { id: 7, name: "CHaa ZZ...", username: "chaazz", avatar: null },
-    { id: 8, name: "Dakon", username: "dakon", avatar: null },
-    { id: 9, name: "ณัฐสิทธิ์ เ...", username: "nattasit", avatar: null },
-    { id: 10, name: "Sukuna", username: "sukuna", avatar: null },
-  ];
-
   return (
     <div className="min-h-screen bg-background">
       <main className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 sm:py-10 lg:py-12">
-        {/* Profile Header */}
-        <div className="flex flex-col gap-6 rounded-lg border bg-card p-6 shadow-sm sm:flex-row sm:items-center sm:gap-8">
-          <ProfileAvatar
-            allowUpload={true}
-            userImg={user.userImg}
-            displayName={user.displayName}
-            isOwnProfile={Boolean(
-              isLoggedIn && currentUser?.id && parseInt(currentUser.id) === user.id
-            )}
-          />
-
-          <div className="flex flex-1 flex-col gap-3">
-            <div className="flex flex-col items-center gap-1 sm:items-start sm:text-left">
-              <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-                <h1 className="text-2xl font-bold text-card-foreground sm:text-3xl">
-                  {user.displayName}
-                </h1>
-                {user.detail?.status === "approve" ? (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="inline-flex cursor-help">
-                        <CheckCircle2 className="size-5 text-blue-500  shrink-0" />
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>บัญชีที่ยืนยันตัวตนนักเขียนแล้ว</p>
-                    </TooltipContent>
-                  </Tooltip>
-                ) : (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="inline-flex cursor-help">
-                        <AlertCircle className="size-5 text-muted-foreground shrink-0" />
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>บัญชีที่ยังไม่ยืนยันตัวตนนักเขียน</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-              </div>
-              {isLoggedIn && currentUser?.id && parseInt(currentUser.id) === user.id && user.uuid && (
-                <span className="text-xs text-muted-foreground text-center sm:text-left">
-                  {user.uuid}
-                </span>
-              )}
-            </div>
-
-            {/* Stats */}
-            <div className="flex flex-wrap justify-between gap-6 sm:justify-start sm:gap-8">
-              <div className="flex items-center gap-2.5">
-                <BookOpen className="size-4 text-muted-foreground" />
-                <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-foreground">
-                    {formatMetricNumber(stats.totalCartoons)}
-                  </span>
-                  <span className="text-xs text-muted-foreground">เรื่อง</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Users className="size-4 text-muted-foreground" />
-                <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-foreground">
-                    {formatMetricNumber(stats.followers)}
-                  </span>
-                  <span className="text-xs text-muted-foreground">ผู้ติดตาม</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <UserPlus className="size-4 text-muted-foreground" />
-                <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-foreground">
-                    {formatMetricNumber(stats.following)}
-                  </span>
-                  <span className="text-xs text-muted-foreground">กำลังติดตาม</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Follow Button - Mobile: Full Width Under Stats */}
-            {isLoggedIn && currentUser?.id && parseInt(currentUser.id) !== user.id && (
-              <div className="w-full md:hidden">
-                <FollowUserButtonClient
-                  targetUserUuid={user.uuid}
-                  initialIsFollowing={isFollowing}
-                  className="w-full"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Follow Button - Desktop: Right Side */}
-          {isLoggedIn && currentUser?.id && parseInt(currentUser.id) !== user.id && (
-            <div className="hidden md:flex shrink-0">
-              <FollowUserButtonClient
-                targetUserUuid={user.uuid}
-                initialIsFollowing={isFollowing}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Super Fans Section */}
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <div className="mb-4 flex items-center gap-2">
-            <Trophy className="size-5 text-yellow-500 fill-yellow-500" />
-            <h2 className="text-lg font-semibold text-card-foreground">แฟนตัวยง (Top Fan)</h2>
-          </div>
-          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-            {superFans.map((fan, index) => {
-              const rank = index + 1;
-              const getMedalStyle = () => {
-                if (rank === 1) return "text-yellow-500 fill-yellow-500";
-                if (rank === 2) return "text-gray-300 fill-gray-300";
-                if (rank === 3) return "text-amber-700 fill-amber-700";
-                return "";
-              };
-
-              return (
-                <Link
-                  key={fan.id}
-                  href={`/profile/${encodeURIComponent(fan.username)}`}
-                  className="flex flex-col items-center gap-2 shrink-0 min-w-[80px]"
-                >
-                  <div className="relative">
-                    <Avatar className="size-14 border-2 border-background">
-                      <AvatarImage
-                        src={fan.avatar ? constructAuthorAvatarUrl(fan.avatar) : undefined}
-                        alt={fan.name}
-                      />
-                      <AvatarFallback className="text-sm">
-                        {fan.name.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    {rank <= 3 && (
-                      <div className="absolute -top-1 -right-1 z-10">
-                        <div className={cn("relative flex items-center justify-center", getMedalStyle())}>
-                          <Trophy className="size-6 drop-shadow-md" />
-                          <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white drop-shadow-sm">
-                            {rank}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <span className="text-center text-xs font-medium text-card-foreground line-clamp-1 max-w-[80px]">
-                    {fan.name}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+        <ProfileSection
+          user={user}
+          stats={stats}
+          isLoggedIn={isLoggedIn}
+          currentUser={currentUser || null}
+          isFollowing={isFollowing}
+        />
 
         {/* Cartoons Section */}
-        {cartoons.length > 0 ? (
-          <div className="flex flex-col gap-4">
-            <h2 className="text-xl font-bold text-card-foreground">
-              ผลงานทั้งหมด ({stats.totalCartoons})
-            </h2>
-            <div
-              className={cn(
-                "grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5",
-                "auto-rows-fr"
-              )}
-            >
-              {cartoons.map((cartoon) => (
-                <CartoonCard key={cartoon.uuid} {...cartoon} />
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center gap-4 rounded-lg border bg-card p-12 text-center">
-            <BookOpen className="size-12 text-muted-foreground" />
-            <div className="flex flex-col gap-2">
-              <h3 className="text-lg font-semibold text-card-foreground">
-                ยังไม่มีผลงาน
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                ผู้ใช้รายนี้ยังไม่ได้เผยแพร่ผลงานใดๆ
-              </p>
-            </div>
-          </div>
-        )}
+        <ProfileCartoonList
+          cartoons={cartoons}
+          totalCartoons={stats.totalCartoons}
+        />
       </main>
     </div>
   );

@@ -1,13 +1,11 @@
 
 import { ReactNode } from "react"
-import Link from "next/link"
-import Image from "next/image"
 import { MobileMenu, type MenuItem } from "@/components/common/MobileMenu"
 import { DesktopMenu } from "@/components/DesktopMenu"
 import { NotificationDropdown } from "@/components/common/NotificationDropdown"
 import { ThemeToggle } from "@/components/common/ThemeToggle"
 import { UserDropdownMenu } from "@/components/common/UserDropdownMenu"
-import { getCurrentUser } from "@/lib/auth/session"
+import { Auth } from "@/lib/auth/auth"
 import { Button } from "@/components/ui/button"
 import { prisma } from "@/lib/prisma"
 import { UserRoleEnum } from "@/lib/utils/roles"
@@ -27,8 +25,8 @@ interface UserLayoutProps {
  * This ensures sensitive routes (e.g., admin routes) are never exposed to unauthorized users.
  */
 export async function UserLayout({ children }: UserLayoutProps) {
-  // Get user session server-side
-  const sessionUser = await getCurrentUser()
+  const sessionUser = await Auth.user()
+  const isAuthenticated = !!sessionUser
 
   // Fetch full user data from database if user is logged in
   let userData = null
@@ -74,6 +72,11 @@ export async function UserLayout({ children }: UserLayoutProps) {
     { href: "/contact", label: "ติดต่อ", icon: "Mail" },
   ]
 
+  // Authenticated-only menu items
+  const authenticatedMenuItems: MenuItem[] = [
+    { href: "/topup", label: "เติมเงิน", icon: "Coins" },
+  ]
+
   // Example: Add role-specific menu items (uncomment when auth is implemented)
   // const adminMenuItems: MenuItem[] = [
   //   { href: "/admin", label: "จัดการระบบ", icon: "Shield" },
@@ -89,8 +92,11 @@ export async function UserLayout({ children }: UserLayoutProps) {
   //   ...(isAdmin(userRole) ? adminMenuItems : []),
   // ]
 
-  // For now, use base menu items only
-  const menuItems: MenuItem[] = baseMenuItems
+  // Combine base menu items with authenticated-only items if user is logged in
+  const menuItems: MenuItem[] = [
+    ...baseMenuItems,
+    ...(isAuthenticated ? authenticatedMenuItems : []),
+  ]
 
   return (
     <>

@@ -22,7 +22,7 @@ export function DesktopMenu({ menuItems, className = "" }: DesktopMenuProps) {
   const pathname = usePathname()
 
   return (
-    <nav className={`hidden md:flex items-center gap-8 lg:gap-10 ${className}`}>
+    <nav className={`hidden md:flex items-center gap-6 lg:gap-6 flex-nowrap ${className}`}>
       {menuItems.map((item) => {
         const isActive = pathname === item.href
         return (
@@ -30,7 +30,7 @@ export function DesktopMenu({ menuItems, className = "" }: DesktopMenuProps) {
             key={item.href}
             href={item.href}
             className={cn(
-              "text-sm lg:text-base font-medium transition-colors py-2 px-3 rounded-md",
+              "text-sm font-medium transition-colors py-2 px-2 rounded-md whitespace-nowrap flex-shrink-0",
               isActive
                 ? "text-primary bg-accent"
                 : "hover:text-primary hover:bg-accent/50"

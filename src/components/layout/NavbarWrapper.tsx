@@ -30,33 +30,33 @@ export function NavbarWrapper({ sessionUser, userData, menuItems }: NavbarWrappe
   return (
     <>
       {/* Navbar */}
-      <header className="sticky md:fixed top-0 z-50 w-full border-b bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 grid grid-cols-3 items-center">
+      <header className="sticky md:fixed top-0 z-50 w-full border-b bg-background overflow-x-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4 min-w-0">
           {/* Left side - Logo and Mobile Menu Button */}
-          <div className="flex items-center gap-4 sm:gap-6">
+          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0 min-w-0">
             {/* Mobile Menu */}
             <MobileMenu menuItems={menuItems} />
 
             {/* Logo - always go to landing page ("/") */}
-            <Link href="/" className="flex items-center gap-2 font-semibold">
+            <Link href="/" className="flex items-center gap-2 font-semibold min-w-0">
               <Image
                 src="/logo/logo.png"
                 alt="Logo"
                 width={570}
                 height={103}
-                className="h-auto w-56 sm:w-40 md:w-48 lg:w-56"
+                className="h-auto w-32 sm:w-40 md:w-48 lg:w-56 max-w-full"
                 priority
               />
             </Link>
           </div>
 
           {/* Center - Desktop Navigation Menu */}
-          <div className="flex justify-center">
+          <div className="hidden md:flex justify-center flex-1 min-w-0">
             <DesktopMenu menuItems={menuItems} />
           </div>
 
           {/* Right side - User menu */}
-          <div className="flex items-center justify-end gap-3 sm:gap-4">
+          <div className="flex items-center justify-end gap-2 sm:gap-3 md:gap-4 flex-shrink-0 min-w-0">
             {/* Theme Toggle - Show on mobile and desktop */}
             <div className="md:hidden">
               <ThemeToggle showOnMobile={true} />

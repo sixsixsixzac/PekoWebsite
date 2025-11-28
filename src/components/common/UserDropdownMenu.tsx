@@ -104,7 +104,7 @@ export function UserDropdownMenu({
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="flex items-center justify-center w-7 h-7 rounded-full bg-yellow-100 dark:bg-yellow-900/50">
-                <FontAwesomeIcon icon={faCoins} className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                <FontAwesomeIcon icon={faCoins} className="text-yellow-600 dark:text-yellow-400 text-xs mr-1" />
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="text-sm font-semibold text-yellow-700 dark:text-yellow-300">
