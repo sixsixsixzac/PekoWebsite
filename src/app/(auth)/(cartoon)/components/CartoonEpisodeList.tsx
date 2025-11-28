@@ -34,23 +34,25 @@ interface Episode {
   lockAfterDatetime?: Date | string | null;
 }
 
-interface EpisodeListProps {
+interface CartoonEpisodeListProps {
   episodes: Episode[];
   type: "manga" | "novel";
   uuid?: string;
+  totalEpisodes: number;
   checkedEpisodes?: Set<string>;
   onCheckedEpisodesChange?: (checked: Set<string>) => void;
   userPoints?: number;
 }
 
-export function EpisodeList({ 
+export function CartoonEpisodeList({ 
   episodes: initialEpisodes, 
   type, 
-  uuid, 
+  uuid,
+  totalEpisodes,
   checkedEpisodes: externalCheckedEpisodes,
   onCheckedEpisodesChange,
   userPoints: propUserPoints
-}: EpisodeListProps) {
+}: CartoonEpisodeListProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const isLoggedIn = !!session?.user;
@@ -259,7 +261,17 @@ export function EpisodeList({
   }, []);
 
   return (
-    <>
+    <section className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-3 sm:space-y-4 border-t" aria-labelledby="episodes-heading">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <h2 id="episodes-heading" className="text-xl sm:text-2xl font-bold text-foreground">
+          ตอนทั้งหมด {totalEpisodes} ตอน
+        </h2>
+      </div>
+
+      {isLoggedIn && (
+        <p className="text-sm sm:text-base text-muted-foreground">เลือกตอนที่ต้องการซื้อ</p>
+      )}
+
       <div className="space-y-2">
         {isLoggedIn && selectedEpisodesForPurchase.length > 0 && (
           <div className="flex items-center justify-between gap-4 p-4 bg-muted/50 rounded-lg border">
@@ -420,8 +432,9 @@ export function EpisodeList({
                               onClick={(e) => e.stopPropagation()}
                             />
                           )}
-                          <span className="text-xs sm:text-sm text-foreground truncate">{episode.title}</span>
+                          <span className="text-xs sm:text-sm text-foreground truncate">ตอนที่ {episode.number}</span>
                         </div>
+                        
                         <div className="flex flex-col items-end shrink-0">
                           {showCheckmark && (
                             <Check className="size-4 sm:size-5 text-green-600 dark:text-green-400 shrink-0" />
@@ -592,7 +605,7 @@ export function EpisodeList({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </section>
   );
 }
 

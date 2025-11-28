@@ -5,7 +5,8 @@ import type { Metadata } from "next";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { BookOpen, Eye, Heart, Trophy } from "lucide-react";
 import Link from "next/link";
-import { FollowButton } from "@/components/common/FollowButton";
+import { FollowUserButtonClient } from "@/components/common/FollowUserButtonClient";
+import { getCurrentUser } from "@/lib/auth/session";
 import { constructAuthorAvatarUrl, constructImageUrl } from "@/lib/utils/image-url";
 import { CartoonCard, type CartoonCardProps } from "@/components/common/CartoonCard";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ async function getUserProfile(username: string) {
     },
     select: {
       id: true,
+      uuid: true,
       displayName: true,
       userImg: true,
       point: true,
@@ -136,6 +138,22 @@ async function getUserProfile(username: string) {
   const totalLikes = cartoons.reduce((sum, c) => sum + c._count.favorites, 0);
   const totalEpisodes = cartoons.reduce((sum, c) => sum + c._count.episodes, 0);
 
+  // Check if current user is following this profile user
+  let isFollowing = false;
+  const currentUser = await getCurrentUser();
+  if (currentUser?.id && user.id) {
+    const currentUserId = parseInt(currentUser.id);
+    if (!isNaN(currentUserId) && currentUserId !== user.id) {
+      const followRelationship = await prisma.userFollower.findFirst({
+        where: {
+          followerId: currentUserId,
+          followingId: user.id,
+        },
+      });
+      isFollowing = !!followRelationship;
+    }
+  }
+
   return {
     user,
     cartoons: cartoonCards,
@@ -145,6 +163,7 @@ async function getUserProfile(username: string) {
       totalLikes,
       totalEpisodes,
     },
+    isFollowing,
   };
 }
 
@@ -169,7 +188,9 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     notFound();
   }
 
-  const { user, cartoons, stats } = profileData;
+  const { user, cartoons, stats, isFollowing } = profileData;
+  const currentUser = await getCurrentUser();
+  const isLoggedIn = !!currentUser?.id;
 
   // Mock super fans data
   const superFans = [
@@ -241,15 +262,26 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             </div>
 
             {/* Follow Button - Mobile: Full Width Under Stats */}
+            {isLoggedIn && parseInt(currentUser.id) !== user.id && (
             <div className="w-full md:hidden">
-              <FollowButton className="w-full" />
+                <FollowUserButtonClient
+                  targetUserUuid={user.uuid}
+                  initialIsFollowing={isFollowing}
+                  className="w-full"
+                />
             </div>
+            )}
           </div>
 
           {/* Follow Button - Desktop: Right Side */}
+          {isLoggedIn && parseInt(currentUser.id) !== user.id && (
           <div className="hidden md:flex shrink-0">
-            <FollowButton />
+              <FollowUserButtonClient
+                targetUserUuid={user.uuid}
+                initialIsFollowing={isFollowing}
+              />
           </div>
+          )}
         </div>
 
         {/* Super Fans Section */}

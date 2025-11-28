@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
+import type React from "react";
 import { OptimizedImage } from "@/components/common/OptimizedImage";
 import { encodeUsername } from "@/lib/utils/username-encode";
 import {
@@ -17,14 +18,12 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import {
-  UserPlus,
   Share2,
   Heart,
   FileText,
   Eye,
   Info,
 } from "lucide-react";
-import { EpisodeList } from "./EpisodeList";
 import { ShareDialog } from "@/components/common/ShareDialog";
 
 interface CartoonDetailPageProps {
@@ -44,15 +43,8 @@ interface CartoonDetailPageProps {
     likes: number;
   };
   description: string;
-  episodes: Array<{
-    uuid: string;
-    number: number;
-    title: string;
-    price: number;
-    isOwned?: boolean;
-    lockAfterDatetime?: Date | string | null;
-  }>;
   uuid?: string;
+  followButton?: React.ReactNode;
 }
 
 export function CartoonDetailPage({
@@ -62,13 +54,12 @@ export function CartoonDetailPage({
   author,
   stats,
   description,
-  episodes,
   uuid,
+  followButton,
 }: CartoonDetailPageProps) {
   const { data: session } = useSession();
   const isLoggedIn = !!session?.user;
   const shareText = type === "manga" ? "แชร์มังงะ" : "แชร์นิยาย";
-  const [checkedEpisodes, setCheckedEpisodes] = useState<Set<string>>(new Set());
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   
   // Generate structured data for SEO
@@ -112,7 +103,7 @@ export function CartoonDetailPage({
         }}
       />
 
-      <article className="min-h-screen bg-background" itemScope itemType={type === "manga" ? "https://schema.org/ComicSeries" : "https://schema.org/Book"}>
+      <article className="bg-background" itemScope itemType={type === "manga" ? "https://schema.org/ComicSeries" : "https://schema.org/Book"}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
           {/* Breadcrumb */}
           <nav aria-label="Breadcrumb">
@@ -190,12 +181,7 @@ export function CartoonDetailPage({
                     </Link>
                   </div>
                 </div>
-                {isLoggedIn && (
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white shrink-0" aria-label="Follow this series">
-                    <UserPlus className="size-4" aria-hidden="true" />
-                    <span className="text-sm sm:text-base">+ ติดตาม</span>
-                  </Button>
-                )}
+                {isLoggedIn && followButton}
               </div>
             </header>
 
@@ -273,28 +259,7 @@ export function CartoonDetailPage({
             </div>
           </div>
         </div>
-
-        {/* Episodes Section */}
-        <section className="space-y-3 sm:space-y-4 pt-4 sm:pt-6 border-t" aria-labelledby="episodes-heading">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-            <h2 id="episodes-heading" className="text-xl sm:text-2xl font-bold text-foreground">
-              ตอนทั้งหมด {stats.episodes} ตอน
-            </h2>
-          </div>
-
-          {isLoggedIn && (
-            <p className="text-sm sm:text-base text-muted-foreground">เลือกตอนที่ต้องการซื้อ</p>
-          )}
-
-          <EpisodeList 
-            episodes={episodes} 
-            type={type} 
-            uuid={uuid}
-            checkedEpisodes={checkedEpisodes}
-            onCheckedEpisodesChange={setCheckedEpisodes}
-          />
-        </section>
-        </div>
+      </div>
       </article>
 
       {/* Share Dialog */}

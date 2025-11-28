@@ -56,6 +56,7 @@ export interface CartoonDetailData {
   genres: string[];
   complete_status: "completed" | "ongoing";
   ageRate?: string;
+  isFollowingAuthor?: boolean;
 }
 
 /**
@@ -154,10 +155,11 @@ export async function getCartoonByUuid(
   if (mainCat) genres.push(mainCat);
   if (subCat) genres.push(subCat);
 
-  // Get current user to check episode ownership (including temporary ownership)
+  // Get current user to check episode ownership (including temporary ownership) and follow status
   const user = await getCurrentUser();
   let ownedEpisodeIds: Set<number> = new Set();
   const episodeLockAfterMap = new Map<number, Date | null>();
+  let isFollowingAuthor = false;
   
   if (user?.id) {
     const userId = parseInt(user.id);
@@ -199,6 +201,24 @@ export async function getCartoonByUuid(
         }
       }
     });
+
+    // Check if user is following the author
+    if (cartoon.author.uuid) {
+      const authorUser = await prisma.userProfile.findFirst({
+        where: { uuid: cartoon.author.uuid },
+        select: { id: true },
+      });
+
+      if (authorUser && authorUser.id !== userId) {
+        const followRelationship = await prisma.userFollower.findFirst({
+          where: {
+            followerId: userId,
+            followingId: authorUser.id,
+          },
+        });
+        isFollowingAuthor = !!followRelationship;
+      }
+    }
   }
 
   return {
@@ -230,6 +250,7 @@ export async function getCartoonByUuid(
     genres,
     complete_status: cartoon.completionStatus === 1 ? "completed" : "ongoing",
     ageRate: cartoon.ageRate && cartoon.ageRate !== "all" ? cartoon.ageRate : undefined,
+    isFollowingAuthor,
   };
 }
 

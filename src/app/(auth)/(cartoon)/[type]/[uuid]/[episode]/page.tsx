@@ -1,18 +1,24 @@
 import { getEpisodeInfo, checkEpisodeOwnership, getEpisodeNavigation, purchaseEpisode } from "@/lib/api/cartoon";
 import { getUserData } from "@/lib/api/user";
-import { NovelRead } from "@/app/(auth)/(cartoon)/novel/[uuid]/[episode]/NovelRead";
+import { MangaRead } from "@/app/(auth)/(cartoon)/components/MangaRead";
+import { NovelRead } from "@/app/(auth)/(cartoon)/components/NovelRead";
 import { EpisodeUnlock } from "@/app/(auth)/(cartoon)/components/EpisodeUnlock";
 import { notFound, redirect } from "next/navigation";
 
-export default async function NovelReadingPage({
+export default async function EpisodeReadingPage({
   params,
 }: {
-  params: Promise<{ uuid: string; episode: string }>;
+  params: Promise<{ type: string; uuid: string; episode: string }>;
 }) {
-  const { uuid, episode } = await params;
+  const { type, uuid, episode } = await params;
+
+  // Validate type
+  if (type !== "manga" && type !== "novel") {
+    notFound();
+  }
 
   // Check episode ownership server-side
-  const episodeInfo = await getEpisodeInfo("novel", uuid, episode);
+  const episodeInfo = await getEpisodeInfo(type, uuid, episode);
 
   if (!episodeInfo) {
     notFound();
@@ -21,10 +27,10 @@ export default async function NovelReadingPage({
   // Fetch user data and navigation in parallel for better performance
   const [userData, navigation] = await Promise.all([
     getUserData(),
-    getEpisodeNavigation("novel", uuid, episodeInfo.epNo),
+    getEpisodeNavigation(type, uuid, episodeInfo.epNo),
   ]);
 
-  const { userId, buyImmediately, userPoints } = userData;
+  const { userId, buyImmediately, loadFullImages, userPoints } = userData;
 
   // Check ownership after getting user data
   const isOwned = await checkEpisodeOwnership(
@@ -51,10 +57,10 @@ export default async function NovelReadingPage({
         const result = await purchaseEpisode([episodeRecord.uuid]);
         if (result.success) {
           // Redirect to refresh the page and show the purchased episode with auto-purchase notification
-          redirect(`/novel/${uuid}/${episode}?autoPurchased=true&epPrice=${episodeInfo.epPrice}&epNo=${episodeInfo.epNo}`);
+          redirect(`/${type}/${uuid}/${episode}?autoPurchased=true&epPrice=${episodeInfo.epPrice}&epNo=${episodeInfo.epNo}`);
         } else {
           // If auto-purchase fails, redirect with error notification
-          redirect(`/novel/${uuid}/${episode}?autoPurchaseFailed=true&error=${encodeURIComponent(result.error || "ไม่สามารถซื้อตอนได้")}`);
+          redirect(`/${type}/${uuid}/${episode}?autoPurchaseFailed=true&error=${encodeURIComponent(result.error || "ไม่สามารถซื้อตอนได้")}`);
         }
       }
     }
@@ -73,7 +79,22 @@ export default async function NovelReadingPage({
           }}
           navigation={navigation}
           userPoints={userPoints}
-          cartoonType="novel"
+          cartoonType={type}
+        />
+      </div>
+    );
+  }
+
+  // Render the appropriate read component based on type
+  if (type === "manga") {
+    return (
+      <div className="max-w-6xl mx-auto">
+        <MangaRead
+          cartoonUuid={uuid}
+          episode={episode}
+          buyImmediately={buyImmediately}
+          loadFullImages={loadFullImages}
+          userPoints={userPoints}
         />
       </div>
     );
