@@ -8,7 +8,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-pekotoon_db}
       MYSQL_USER: ${MYSQL_USER:-admin_web}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-admin_web}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-pinkjung1234}
       TZ: Asia/Bangkok
     ports:
       - "${MYSQL_PORT:-3306}:3306"
