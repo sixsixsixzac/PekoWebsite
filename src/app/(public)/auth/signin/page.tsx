@@ -10,9 +10,11 @@ export const metadata: Metadata = generateMetadata({
 })
 
 export default function SignInPage() {
+  const recaptchaSiteKey = process.env.RECAPTCHA_SITE_KEY
+
   return (
     <Suspense fallback={<div className="flex min-h-screen items-center justify-center">กำลังโหลด...</div>}>
-      <SignInForm />
+      <SignInForm recaptchaSiteKey={recaptchaSiteKey} />
     </Suspense>
   )
 }

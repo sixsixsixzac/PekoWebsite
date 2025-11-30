@@ -25,7 +25,11 @@ const ReCAPTCHA = dynamic(
   }
 ) as any
 
-export function SignInForm() {
+interface SignInFormProps {
+  recaptchaSiteKey?: string
+}
+
+export function SignInForm({ recaptchaSiteKey }: SignInFormProps) {
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/'
   
@@ -209,11 +213,11 @@ export function SignInForm() {
             </Link>
           </div>
 
-          {isProduction && (
+          {isProduction && recaptchaSiteKey && (
             <div className="flex justify-center">
               <ReCAPTCHA
                 ref={recaptchaRef}
-                sitekey={process.env.RECAPTCHA_SITE_KEY || ''}
+                sitekey={recaptchaSiteKey}
                 onChange={handleRecaptchaChange}
                 theme="light"
               />

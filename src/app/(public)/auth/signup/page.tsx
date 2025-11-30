@@ -9,7 +9,9 @@ export const metadata: Metadata = generateMetadata({
 })
 
 export default function SignUpPage() {
-  return <SignUpForm />
+  const recaptchaSiteKey = process.env.RECAPTCHA_SITE_KEY
+
+  return <SignUpForm recaptchaSiteKey={recaptchaSiteKey} />
 }
 
 

@@ -24,7 +24,11 @@ const ReCAPTCHA = dynamic(
   }
 ) as any
 
-export function SignUpForm() {
+interface SignUpFormProps {
+  recaptchaSiteKey?: string
+}
+
+export function SignUpForm({ recaptchaSiteKey }: SignUpFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [username, setUsername] = useState('')
@@ -243,11 +247,11 @@ export function SignUpForm() {
             </InputGroup>
           </div>
 
-          {isProduction && (
+          {isProduction && recaptchaSiteKey && (
             <div className="flex justify-center">
               <ReCAPTCHA
                 ref={recaptchaRef}
-                sitekey={process.env.RECAPTCHA_SITE_KEY || ''}
+                sitekey={recaptchaSiteKey}
                 onChange={handleRecaptchaChange}
                 theme="light"
               />
