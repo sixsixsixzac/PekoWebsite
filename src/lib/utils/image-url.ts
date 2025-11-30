@@ -13,6 +13,7 @@ export function constructImageUrl(path: string | null, defaultPath: string): str
 
 /**
  * Constructs author avatar URL
+ * Handles both new uploads path and legacy avatar paths
  */
 export function constructAuthorAvatarUrl(userImg: string | null): string | undefined {
   if (!userImg) return undefined;
@@ -37,12 +38,27 @@ export function constructAuthorAvatarUrl(userImg: string | null): string | undef
     return `/${userImg}`;
   }
   
-  // Handle legacy paths that might not exist
-  // Only construct URL if it doesn't look like an invalid path
+  // Handle legacy paths that start with "avatars/"
   if (userImg.startsWith("avatars/")) {
-    return `/images/${userImg}`;
+    // Try uploads first (new location), then fall back to images (legacy)
+    return `/uploads/${userImg}`;
   }
   
+  // Handle legacy avatar filenames (just filename without path)
+  // If it looks like an avatar filename (starts with "avatar_" or is a short random string)
+  // and doesn't contain a path separator, assume it's in uploads/avatars/
+  if (!userImg.includes("/") && !userImg.includes("\\")) {
+    // Check if it looks like an avatar filename
+    const isAvatarFilename = 
+      userImg.startsWith("avatar_") ||
+      userImg.match(/^[A-Z0-9]{8,}\.(jpg|jpeg|png|webp)$/i) !== null; // Random string filenames
+    
+    if (isAvatarFilename) {
+      return `/uploads/avatars/${userImg}`;
+    }
+  }
+  
+  // Default: try images path (legacy location)
   return `/images/${userImg}`;
 }
 
