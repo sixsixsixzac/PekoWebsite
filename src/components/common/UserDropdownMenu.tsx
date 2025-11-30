@@ -49,8 +49,11 @@ export function UserDropdownMenu({
     if (onLogout) {
       onLogout()
     } else {
-      await signOut()
-
+      // Use window.location.origin to ensure we use the correct base URL (localhost instead of 0.0.0.0)
+      const callbackUrl = typeof window !== 'undefined' 
+        ? `${window.location.origin}/`
+        : '/'
+      await signOut({ callbackUrl })
     }
   }
 

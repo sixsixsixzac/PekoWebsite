@@ -15,6 +15,7 @@ import {
   InputGroupButton,
 } from '@/components/ui/input-group'
 import dynamic from 'next/dynamic'
+import { toast } from 'sonner'
 
 // Dynamically import ReCAPTCHA to avoid SSR issues
 const ReCAPTCHA = dynamic(
@@ -51,7 +52,7 @@ export function SignUpForm({ recaptchaSiteKey }: SignUpFormProps) {
       // Verify reCAPTCHA in production
       if (isProduction) {
         if (!recaptchaValue) {
-          alert('กรุณาทำการยืนยัน reCAPTCHA')
+          toast.error('กรุณาทำการยืนยัน reCAPTCHA')
           setIsLoading(false)
           return
         }
@@ -59,24 +60,24 @@ export function SignUpForm({ recaptchaSiteKey }: SignUpFormProps) {
 
       // Validate passwords match
       if (password !== confirmPassword) {
-        alert('รหัสผ่านไม่ตรงกัน')
+        toast.error('รหัสผ่านไม่ตรงกัน')
         setIsLoading(false)
         return
       }
 
       // Basic validation
       if (!username || !nickName || !email || !password) {
-        alert('กรุณากรอกข้อมูลให้ครบถ้วน')
+        toast.error('กรุณากรอกข้อมูลให้ครบถ้วน')
         setIsLoading(false)
         return
       }
 
       // Show success message and redirect to sign in
-      alert('กรุณาเข้าสู่ระบบด้วย Google หรือติดต่อผู้ดูแลระบบ')
+      toast.info('กรุณาเข้าสู่ระบบด้วย Google หรือติดต่อผู้ดูแลระบบ')
       window.location.href = '/auth/signin'
     } catch (error) {
       console.error('Sign up error:', error)
-      alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง')
+      toast.error('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง')
     } finally {
       setIsLoading(false)
     }
@@ -89,7 +90,7 @@ export function SignUpForm({ recaptchaSiteKey }: SignUpFormProps) {
       // Verify reCAPTCHA in production
       if (isProduction) {
         if (!recaptchaValue) {
-          alert('กรุณาทำการยืนยัน reCAPTCHA')
+          toast.error('กรุณาทำการยืนยัน reCAPTCHA')
           setIsGoogleLoading(false)
           return
         }
@@ -100,7 +101,7 @@ export function SignUpForm({ recaptchaSiteKey }: SignUpFormProps) {
       })
     } catch (error) {
       console.error('Sign up error:', error)
-      alert('เข้าสู่ระบบล้มเหลว กรุณาลองใหม่อีกครั้ง')
+      toast.error('เข้าสู่ระบบล้มเหลว กรุณาลองใหม่อีกครั้ง')
     } finally {
       setIsGoogleLoading(false)
     }

@@ -16,6 +16,7 @@ import {
   InputGroupButton,
 } from '@/components/ui/input-group'
 import dynamic from 'next/dynamic'
+import { toast } from 'sonner'
 
 // Dynamically import ReCAPTCHA to avoid SSR issues
 const ReCAPTCHA = dynamic(
@@ -63,7 +64,7 @@ export function SignInForm({ recaptchaSiteKey }: SignInFormProps) {
       // Verify reCAPTCHA in production
       if (isProduction) {
         if (!recaptchaValue) {
-          alert('กรุณาทำการยืนยัน reCAPTCHA')
+          toast.error('กรุณาทำการยืนยัน reCAPTCHA')
           setIsLoading(false)
           return
         }
@@ -84,13 +85,14 @@ export function SignInForm({ recaptchaSiteKey }: SignInFormProps) {
       })
 
       if (result?.error) {
-        alert('อีเมล/ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง')
+        toast.error('อีเมล/ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง')
       } else if (result?.ok) {
+        toast.success('เข้าสู่ระบบสำเร็จ')
         window.location.href = callbackUrl
       }
     } catch (error) {
       console.error('Sign in error:', error)
-      alert('เข้าสู่ระบบล้มเหลว กรุณาลองใหม่อีกครั้ง')
+      toast.error('เข้าสู่ระบบล้มเหลว กรุณาลองใหม่อีกครั้ง')
     } finally {
       setIsLoading(false)
     }
@@ -103,7 +105,7 @@ export function SignInForm({ recaptchaSiteKey }: SignInFormProps) {
       // Verify reCAPTCHA in production
       if (isProduction) {
         if (!recaptchaValue) {
-          alert('กรุณาทำการยืนยัน reCAPTCHA')
+          toast.error('กรุณาทำการยืนยัน reCAPTCHA')
           setIsGoogleLoading(false)
           return
         }
@@ -114,7 +116,7 @@ export function SignInForm({ recaptchaSiteKey }: SignInFormProps) {
       })
     } catch (error) {
       console.error('Sign in error:', error)
-      alert('เข้าสู่ระบบล้มเหลว กรุณาลองใหม่อีกครั้ง')
+      toast.error('เข้าสู่ระบบล้มเหลว กรุณาลองใหม่อีกครั้ง')
     } finally {
       setIsGoogleLoading(false)
     }
