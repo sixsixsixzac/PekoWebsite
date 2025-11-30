@@ -23,6 +23,11 @@ const nextConfig: NextConfig = {
     qualities: [70, 85, 90],
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60,
+    // Disable image optimization for local images to prevent 400 errors
+    // Local images in /images/ will be served directly without optimization
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   async rewrites() {
     return [

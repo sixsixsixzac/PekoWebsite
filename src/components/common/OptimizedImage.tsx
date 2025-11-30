@@ -39,9 +39,12 @@ export function OptimizedImage({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const isDicebearImage = src?.includes("api.dicebear.com");
-  // Check if it's a local image (starts with /images/)
-  const isLocalImage = src?.startsWith("/images/");
+  // Check if it's a local image (starts with /images/ or /uploads/)
+  const isLocalImage = src?.startsWith("/images/") || src?.startsWith("/uploads/");
   const isPriority = Boolean(priority);
+  
+  // Force unoptimized for local images to prevent 400 errors
+  const shouldUnoptimize = isDicebearImage || isLocalImage;
 
   const handleLoad = () => {
     setImageLoaded(true);
@@ -74,7 +77,8 @@ export function OptimizedImage({
     placeholder,
     ...(placeholder === "blur" ? { blurDataURL: getBlurDataURL() } : {}),
     // Unoptimize dicebear images and local images to avoid 400 errors in production
-    unoptimized: isDicebearImage || isLocalImage,
+    // This prevents Next.js from trying to optimize images that may not exist or cause issues
+    unoptimized: shouldUnoptimize,
     onLoad: handleLoad,
     onError: handleError,
     ...(itemProp && { itemProp }),
