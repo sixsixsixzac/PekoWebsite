@@ -10,7 +10,8 @@ interface EnvInfo {
   environment: string
   timestamp: string
   safeVariables: Record<string, string>
-  sensitiveVariables: Record<string, boolean>
+  sensitiveVariables: Record<string, boolean> | null
+  showSensitive: boolean
   note: string
 }
 
@@ -64,7 +65,7 @@ export default function EnvDebugPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              This page is only available in development mode or when ALLOW_ENV_DEBUG=true is set.
+              {error}
             </p>
             <Button onClick={fetchEnvInfo} variant="outline">
               <RefreshCw className="mr-2 h-4 w-4" />
@@ -124,20 +125,36 @@ export default function EnvDebugPage() {
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-sm font-semibold mb-3">Sensitive Variables (Existence Only)</h3>
-                <p className="text-xs text-muted-foreground mb-3">{envInfo.note}</p>
-                <div className="space-y-2">
-                  {Object.entries(envInfo.sensitiveVariables).map(([key, exists]) => (
-                    <div key={key} className="flex items-center gap-4 p-3 bg-muted/50 rounded-md">
-                      <code className="text-sm font-mono text-primary min-w-[200px]">{key}</code>
-                      <Badge variant={exists ? 'default' : 'secondary'}>
-                        {exists ? 'Set' : 'Not Set'}
-                      </Badge>
-                    </div>
-                  ))}
+              {envInfo.sensitiveVariables && (
+                <div>
+                  <h3 className="text-sm font-semibold mb-3">Sensitive Variables (Existence Only)</h3>
+                  <p className="text-xs text-muted-foreground mb-3">{envInfo.note}</p>
+                  <div className="space-y-2">
+                    {Object.entries(envInfo.sensitiveVariables).map(([key, exists]) => (
+                      <div key={key} className="flex items-center gap-4 p-3 bg-muted/50 rounded-md">
+                        <code className="text-sm font-mono text-primary min-w-[200px]">{key}</code>
+                        <Badge variant={exists ? 'default' : 'secondary'}>
+                          {exists ? 'Set' : 'Not Set'}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
+              
+              {!envInfo.showSensitive && (
+                <div>
+                  <h3 className="text-sm font-semibold mb-3">Sensitive Variables</h3>
+                  <div className="p-4 bg-muted/50 rounded-md border border-dashed">
+                    <p className="text-sm text-muted-foreground">
+                      {envInfo.note}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      To view sensitive variables, set <code className="bg-background px-1 py-0.5 rounded">ALLOW_ENV_DEBUG=true</code> in your environment variables.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="pt-4 border-t">
                 <h3 className="text-sm font-semibold mb-2">Client-Side Values</h3>

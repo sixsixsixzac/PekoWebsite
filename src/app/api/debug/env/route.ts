@@ -5,18 +5,11 @@ import { NextResponse } from 'next/server'
  * Only shows non-sensitive variables for security
  */
 export async function GET() {
-  // Only allow in development or if explicitly enabled
   const isDev = process.env.NODE_ENV === 'development'
-  const allowDebug = process.env.ALLOW_ENV_DEBUG === 'true'
-  
-  if (!isDev && !allowDebug) {
-    return NextResponse.json(
-      { error: 'Environment debug is disabled in production' },
-      { status: 403 }
-    )
-  }
+  const allowFullDebug = process.env.ALLOW_ENV_DEBUG === 'true'
 
   // List of safe environment variables to show (non-sensitive)
+  // These are always shown, even in production
   const safeEnvVars = [
     'NODE_ENV',
     'NEXT_PUBLIC_APP_URL',
@@ -34,7 +27,7 @@ export async function GET() {
     envInfo[key] = value || '(not set)'
   })
 
-  // Show if sensitive vars exist (but not their values)
+  // Sensitive variables - only show existence if in dev or explicitly enabled
   const sensitiveVars = [
     'NEXTAUTH_SECRET',
     'JWT_SECRET',
@@ -48,16 +41,23 @@ export async function GET() {
   ]
 
   const sensitiveInfo: Record<string, boolean> = {}
-  sensitiveVars.forEach((key) => {
-    sensitiveInfo[key] = !!process.env[key]
-  })
+  
+  // Only show sensitive variable info if in dev or explicitly enabled
+  if (isDev || allowFullDebug) {
+    sensitiveVars.forEach((key) => {
+      sensitiveInfo[key] = !!process.env[key]
+    })
+  }
 
   return NextResponse.json({
     environment: process.env.NODE_ENV,
     timestamp: new Date().toISOString(),
     safeVariables: envInfo,
-    sensitiveVariables: sensitiveInfo,
-    note: 'Sensitive variables are shown as true/false (exists/not exists) for security',
+    sensitiveVariables: Object.keys(sensitiveInfo).length > 0 ? sensitiveInfo : null,
+    showSensitive: isDev || allowFullDebug,
+    note: isDev || allowFullDebug
+      ? 'Sensitive variables are shown as true/false (exists/not exists) for security'
+      : 'Sensitive variables are hidden. Set ALLOW_ENV_DEBUG=true to see them.',
   })
 }
 
