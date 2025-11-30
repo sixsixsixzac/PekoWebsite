@@ -4,7 +4,7 @@ import { getToken } from 'next-auth/jwt'
 import { findRouteConfig } from '@/lib/auth/route-config'
 import { hasRole, type UserRole } from '@/lib/utils/roles'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Find matching route configuration
@@ -55,7 +55,7 @@ export async function middleware(request: NextRequest) {
 }
 
 // Static matcher - Next.js requires this to be statically analyzable
-// The middleware function will handle the actual route matching dynamically
+// The proxy function will handle the actual route matching dynamically
 export const config = {
   matcher: [
     '/settings/:path*',

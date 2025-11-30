@@ -11,6 +11,11 @@ export const metadata: Metadata = generateMetadata({
   keywords: ["เติมเงิน", "topup", "coins", "เหรียญ"],
 })
 
+// Force dynamic rendering to prevent static generation errors
+// This page requires database access which isn't available during build
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function TopupPage() {
   // Fetch topup packages server-side
   const packages = await getTopupPackages()
