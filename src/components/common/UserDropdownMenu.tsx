@@ -49,15 +49,8 @@ export function UserDropdownMenu({
     if (onLogout) {
       onLogout()
     } else {
-      // Always use window.location.origin in client components to ensure correct domain
-      // This works correctly in production regardless of environment variable settings
-      const callbackUrl = typeof window !== 'undefined' 
-        ? `${window.location.origin}/` 
-        : '/'
-      console.log('callbackUrl', callbackUrl)
-      console.log('window.location.origin', window.location.origin)
-      console.log('window.location.href', window.location.href)
-      await signOut({ callbackUrl })
+      // Redirect to the landing page path; let NextAuth use the current origin
+      await signOut({ callbackUrl: "/" })
     }
   }
 
