@@ -54,6 +54,9 @@ export function UserDropdownMenu({
       const callbackUrl = typeof window !== 'undefined' 
         ? `${window.location.origin}/` 
         : '/'
+      console.log('callbackUrl', callbackUrl)
+      console.log('window.location.origin', window.location.origin)
+      console.log('window.location.href', window.location.href)
       await signOut({ callbackUrl })
     }
   }
