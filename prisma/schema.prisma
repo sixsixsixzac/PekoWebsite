@@ -536,6 +536,8 @@ model UserProfile {
   createdAt              DateTime  @default(dbgenerated("CURRENT_TIMESTAMP")) @map("created_at") @db.DateTime
   updatedAt              DateTime  @default(dbgenerated("CURRENT_TIMESTAMP")) @updatedAt @map("updated_at") @db.DateTime
   socialMedia            String?   @map("social_media") @db.LongText
+  googleId               String?   @map("google_id") @db.VarChar(255)
+  googleToken            String?   @map("google_token") @db.Text
 
   announcementsCreated Announcement[]     @relation("AnnouncementCreator")
   announcementsUpdated Announcement[]     @relation("AnnouncementUpdater")

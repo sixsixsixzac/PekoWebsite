@@ -53,3 +53,4 @@ export function buildSearchHref(filters?: SearchFilters): string {
   return params.toString() ? `/search?${params.toString()}` : "/search";
 }
 
+
