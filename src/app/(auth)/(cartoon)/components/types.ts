@@ -43,6 +43,7 @@ export interface EpisodeHeaderProps {
   navigation: NavigationInfo | null;
   onNavigate: (epNo: number | null) => void;
   isLoading?: boolean;
+  position?: "sticky" | "fixed";
 }
 
 export interface EpisodeFooterProps {

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { UserDetailStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { generateMetadata as generatePageMetadata } from "@/lib/utils/metadata";
 import type { Metadata } from "next";
@@ -123,7 +124,7 @@ async function getUserProfile(username: string) {
         name: cartoon.author.displayName,
         username: cartoon.author.uName || "",
         avatar: constructAuthorAvatarUrl(cartoon.author.userImg),
-        verified: false,
+        verified: user.detail?.status === UserDetailStatus.approve,
       },
       genres,
       views: cartoon._count.episodeViews,

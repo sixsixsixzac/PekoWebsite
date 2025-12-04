@@ -260,7 +260,11 @@ export function NovelRead({ cartoonUuid, episode, buyImmediately = false, userPo
         navigation={navigation}
         onNavigate={handleNavigation}
         isLoading={loading && !episodeInfo}
+        position="fixed"
       />
+
+      {/* Spacer for fixed header */}
+      <div className="h-16" />
 
       {/* Breadcrumb */}
       <Breadcrumb className="px-4 md:px-0">

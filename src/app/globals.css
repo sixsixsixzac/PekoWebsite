@@ -127,6 +127,69 @@
 }
 
 @layer utilities {
+  /* Custom styling for novel reader HTML content */
+  .novel-content {
+    line-height: 1.9;
+  }
+
+  .novel-content h1 {
+    font-size: 1.875rem; /* text-3xl */
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .novel-content h2 {
+    font-size: 1.5rem; /* text-2xl */
+    font-weight: 700;
+    margin-bottom: 0.875rem;
+  }
+
+  .novel-content h3 {
+    font-size: 1.25rem; /* text-xl */
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+
+  .novel-content h4 {
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 600;
+    margin-bottom: 0.625rem;
+  }
+
+  .novel-content div,
+  .novel-content p {
+    margin-bottom: 0.75rem;
+  }
+
+  .novel-content ul,
+  .novel-content ol {
+    margin-left: 1.5rem;
+    margin-bottom: 0.75rem;
+    padding-left: 1rem;
+  }
+
+  .novel-content ul {
+    list-style-type: disc;
+  }
+
+  .novel-content ol {
+    list-style-type: decimal;
+  }
+
+  .novel-content li {
+    margin-bottom: 0.35rem;
+  }
+
+  .novel-content strong,
+  .novel-content b {
+    font-weight: 700;
+  }
+
+  .novel-content em,
+  .novel-content i {
+    font-style: italic;
+  }
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;

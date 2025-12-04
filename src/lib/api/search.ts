@@ -28,6 +28,9 @@ type CartoonQueryResult = {
     uName: string;
     userImg: string | null;
     level: number;
+    detail: {
+      status: string;
+    } | null;
   };
   _count: {
     episodeViews: number;
@@ -285,6 +288,11 @@ export async function searchCartoons(
         uName: true,
         userImg: true,
         level: true,
+        detail: {
+          select: {
+            status: true,
+          },
+        },
       },
     },
     _count: {
@@ -454,12 +462,12 @@ export async function searchCartoons(
     return {
       uuid: cartoon.uuid?.toString() || "",
       title: cartoon.title,
-      coverImage: constructImageUrl(cartoon.coverImage, "/images/post_img/default.png"),
+      coverImage: constructImageUrl(cartoon.coverImage, "/images/post_img/none.png"),
       author: {
         name: cartoon.author.displayName,
         username: cartoon.author.uName,
         avatar: constructAuthorAvatarUrl(cartoon.author.userImg),
-        verified: cartoon.author.level >= 2,
+        verified: cartoon.author.detail?.status === 'approve',
       },
       genres,
       views: cartoon._count.episodeViews,

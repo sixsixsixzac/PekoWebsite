@@ -9,9 +9,13 @@ export function EpisodeHeader({
   navigation,
   onNavigate,
   isLoading = false,
+  position = "sticky",
 }: EpisodeHeaderProps) {
+  const positionClass = position === "fixed" ? "fixed" : "sticky";
+  const widthClass = position === "fixed" ? "w-full" : "";
+  
   return (
-    <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+    <div className={`${positionClass} ${widthClass} top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b`}>
       <div className="flex items-center justify-between px-4 md:px-0 py-2">
         <div className="flex-1 px-3">
           {episodeInfo ? (
