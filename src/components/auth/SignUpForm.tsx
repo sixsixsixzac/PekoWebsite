@@ -72,9 +72,53 @@ export function SignUpForm({ recaptchaSiteKey }: SignUpFormProps) {
         return
       }
 
-      // Show success message and redirect to sign in
-      toast.info('กรุณาเข้าสู่ระบบด้วย Google หรือติดต่อผู้ดูแลระบบ')
-      window.location.href = '/auth/signin'
+      // Call signup API
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: username.trim(),
+          nickName: nickName.trim(),
+          email: email.trim(),
+          password,
+          confirmPassword,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        // Handle rate limiting
+        if (response.status === 429) {
+          toast.error(data.message || 'กรุณารอสักครู่ก่อนลองอีกครั้ง')
+          return
+        }
+        
+        // Handle other errors
+        toast.error(data.error || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง')
+        return
+      }
+
+      // Success
+      toast.success(data.message || 'สมัครสมาชิกสำเร็จ')
+      
+      // Reset form
+      setUsername('')
+      setNickName('')
+      setEmail('')
+      setPassword('')
+      setConfirmPassword('')
+      setRecaptchaValue(null)
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset()
+      }
+
+      // Redirect to sign in page after a short delay
+      setTimeout(() => {
+        window.location.href = '/auth/signin'
+      }, 1500)
     } catch (error) {
       console.error('Sign up error:', error)
       toast.error('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง')
