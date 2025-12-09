@@ -5,21 +5,18 @@
   "scripts": {
     "dev": "next dev -H localhost",
     "build": "next build",
-    "build:production": "NODE_ENV=production next build",
-    "start": "next start -H 0.0.0.0 -p 3000",
-    "start:production": "NODE_ENV=production next start -H localhost",
+    "start": "bun run start -H 0.0.0.0 -p 3000",
+    "clean": "rm -rf .next",
+    "clean:build": "rm -rf .next && bun run build",
     "server": "bun run server.ts",
     "ws:server": "bun run src/lib/websocket/server.ts",
     "dev:ws": "bun run src/lib/websocket/server.ts",
     "lint": "eslint",
-    "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "migrate:google-accounts": "npx tsx prisma/migrate-google-accounts.ts",
-    "test:webhook": "bun run scripts/test-webhook.ts"
+    "migrate:google-accounts": "npx tsx prisma/migrate-google-accounts.ts"
   },
   "packageManager": "bun@latest",
   "dependencies": {
